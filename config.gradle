@@ -1,0 +1,237 @@
+
+def build_versions = [:]
+
+build_versions.min_sdk = 23
+build_versions.compile_sdk = 30
+build_versions.target_sdk = 24
+build_versions.build_tools = "30.0.3"
+build_versions.version_code = 1
+build_versions.version_name = "1.0"
+build_versions.applicationId = "cn.guankejian.test"
+
+ext.build_versions = build_versions
+
+def versions = [:]
+
+versions.gradle = "4.2.2"
+
+versions.kotlin = "1.4.32"
+
+versions.paging = "3.0.0"
+versions.room = "2.3.0"
+versions.navigation = "2.4.0-alpha04"
+versions.retrofit = "2.7.2"
+versions.preference = "1.1.1"
+versions.hilt = "1.1.1"
+versions.biometric = "1.2.0-alpha01"
+versions.lifecycle = "2.3.1"
+versions.androidbrowserhelper = "2.2.0"
+versions.browser = "1.3.0"
+versions.material_dialogs = "3.3.0"
+versions.fragment = "1.4.0-alpha05"
+versions.activity = "1.3.0-rc02"
+versions.palette = "1.0.0"
+versions.guava = "9999.0-empty-to-avoid-conflict-with-guava"
+versions.oss = "2.9.6"
+versions.blankj = "1.30.5"
+versions.legacy = "1.0.0"
+versions.circleimageview = "3.1.0"
+versions.calendarview = "3.6.9"
+versions.lottie = "3.5.0"
+versions.glide = "4.11.0"
+versions.coil = "1.3.2"
+versions.gson = "2.8.5"
+versions.okio = "3.0.0-alpha.5"
+versions.fastjson = "1.2.59"
+versions.okhttp = "4.2.0"
+versions.banner = "2.1.0"
+versions.GSYVideoPlayer = "7.1.3"
+versions.BaseRecyclerViewAdapterHelper = "3.0.4"
+versions.smart_refresh = "2.0.1"
+versions.material = "1.4.0-alpha02"
+versions.constraint_layout = "2.1.0-beta01"
+versions.appcompat = "1.3.0-rc01"
+versions.PictureSelector = "v2.5.8"
+versions.permissionx = "1.3.0"
+versions.jsoup = "1.13.1"
+versions.BasePopup = "2.2.7"
+versions.agentweb = "4.1.3"
+versions.jiaozivideoplayer = "7.5.0"
+versions.wmrichtexteditor = "2.0.4"
+versions.richeditor_android = "2.0.0"
+versions.BannerViewPager = "3.2.0"
+versions.fab = "1.6.4"
+versions.PatternLocker = "2.5.7"
+versions.codec = "1.8"
+versions.zxing = "2.2"
+versions.swipe_refresh = "1.1.0"
+versions.data_store = "1.0.0-rc01"
+versions.mp_chart = "v3.0.2"
+
+ext.versions = versions
+
+def deps = [:]
+
+deps.gradle = "com.android.tools.build:gradle:$versions.gradle"
+
+deps.kotlin_gradle_plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+
+deps.activity = "androidx.activity:activity-ktx:$versions.activity"
+deps.appcompat = "androidx.appcompat:appcompat:$versions.appcompat"
+
+def paging = [:]
+paging.runtime = "androidx.paging:paging-runtime:$versions.paging"
+deps.paging = paging
+
+def room = [:]
+room.runtime = "androidx.room:room-runtime:$versions.room"
+room.compiler = "androidx.room:room-compiler:$versions.room"
+room.ktx = "androidx.room:room-ktx:$versions.room"
+deps.room = room
+
+def navigation = [:]
+navigation.runtime = "androidx.navigation:navigation-runtime:$versions.navigation"
+navigation.runtime_ktx = "androidx.navigation:navigation-runtime-ktx:$versions.navigation"
+navigation.fragment = "androidx.navigation:navigation-fragment:$versions.navigation"
+navigation.fragment_ktx = "androidx.navigation:navigation-fragment-ktx:$versions.navigation"
+
+navigation.ui = "androidx.navigation:navigation-ui:$versions.navigation"
+navigation.ui_ktx = "androidx.navigation:navigation-ui-ktx:$versions.navigation"
+navigation.safe_args_plugin = "androidx.navigation:navigation-safe-args-gradle-plugin:$versions.navigation"
+deps.navigation = navigation
+
+
+def retrofit = [:]
+retrofit.runtime = "com.squareup.retrofit2:retrofit:$versions.retrofit"
+retrofit.gson = "com.squareup.retrofit2:converter-gson:$versions.retrofit"
+deps.retrofit = retrofit
+
+def preference = [:]
+preference.runtime = "androidx.preference:preference:$versions.preference"
+preference.ktx = "androidx.preference:preference-ktx:$versions.preference"
+deps.preference = preference
+
+
+def hilt = [:]
+hilt.hilt_android = "com.google.dagger:hilt-android:2.37"
+hilt.hilt_android_gradle_plugin = "com.google.dagger:hilt-android-gradle-plugin:2.37"
+hilt.lifecycle_viewmodel = "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
+hilt.compiler = "com.google.dagger:hilt-android-compiler:2.37"
+hilt.hilt_compiler = "androidx.hilt:hilt-compiler:1.0.0-alpha03"
+deps.hilt = hilt
+
+def biometric = [:]
+biometric.runtime = "androidx.biometric:biometric:$versions.biometric"
+biometric.ktx = "androidx.biometric:biometric-ktx:$versions.biometric"
+deps.biometric = biometric
+
+def lifecycle = [:]
+lifecycle.runtime = "androidx.lifecycle:lifecycle-runtime:$versions.lifecycle"// Lifecycles only (without ViewModel or LiveData)
+lifecycle.java8 = "androidx.lifecycle:lifecycle-common-java8:$versions.lifecycle"// alternately - if using Java8, use the following instead of lifecycle-compiler
+lifecycle.compiler = "androidx.lifecycle:lifecycle-compiler:$versions.lifecycle"// Annotation processor
+lifecycle.viewmodel_ktx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.lifecycle"// ViewModel
+lifecycle.livedata_ktx = "androidx.lifecycle:lifecycle-livedata-ktx:$versions.lifecycle"// LiveData
+lifecycle.viewmodel_savestate = "androidx.lifecycle:lifecycle-viewmodel-savedstate:$versions.lifecycle"// Saved state module for ViewModel
+deps.lifecycle = lifecycle
+
+def fragment = [:]
+fragment.runtime = "androidx.fragment:fragment:${versions.fragment}"
+fragment.ktx = "androidx.fragment:fragment-ktx:${versions.fragment}"
+deps.fragment = fragment
+
+def glide = [:]
+glide.runtime = "com.github.bumptech.glide:glide:$versions.glide"
+glide.compiler = "com.github.bumptech.glide:compiler:$versions.glide"
+deps.glide = glide
+
+def coil = [:]
+coil.runtime = "io.coil-kt:coil:${versions.coil}"
+deps.coil = coil
+
+def okhttp = [:]
+okhttp.okhttp_logging_interceptor = "com.squareup.okhttp3:logging-interceptor:${versions.okhttp}"
+okhttp.runtime = "com.squareup.okhttp3:okhttp:${versions.okhttp}"
+deps.okhttp = okhttp
+
+deps.androidbrowserhelper = "com.google.androidbrowserhelper:androidbrowserhelper:$versions.androidbrowserhelper"
+
+deps.browser = "androidx.browser:browser:$versions.browser"
+
+deps.material_dialogs = "com.afollestad.material-dialogs:color:$versions.material_dialogs"
+
+
+deps.palette = "androidx.palette:palette:${versions.palette}"
+
+deps.guava_conflict = "com.google.guava:listenablefuture:${versions.guava}"
+
+deps.oss = "com.aliyun.dpa:oss-android-sdk:${versions.oss}"
+
+deps.blankj = "com.blankj:utilcodex:${versions.blankj}"
+
+deps.legacy = "androidx.legacy:legacy-support-v4:${versions.legacy}"
+
+deps.circleimageview = "de.hdodenhof:circleimageview:${versions.circleimageview}"
+
+deps.calendarview = "com.haibin:calendarview:${versions.calendarview}"
+
+deps.lottie = "com.airbnb.android:lottie:${versions.lottie}"
+
+
+deps.gson = "com.google.code.gson:gson:${versions.gson}"
+
+deps.okio = "com.squareup.okio:okio:${versions.okio}"
+
+deps.fastjson = "com.alibaba:fastjson:${versions.fastjson}"
+
+deps.banner = "com.youth.banner:banner:${versions.banner}"
+
+deps.GSYVideoPlayer = "com.shuyu:GSYVideoPlayer:${versions.GSYVideoPlayer}"
+
+deps.BaseRecyclerViewAdapterHelper = "com.github.CymChad:BaseRecyclerViewAdapterHelper:${versions.BaseRecyclerViewAdapterHelper}"
+
+def smart_refresh = [:]
+smart_refresh.layout_kernel = "com.scwang.smart:refresh-layout-kernel:${versions.smart_refresh}"
+smart_refresh.header_classics = "com.scwang.smart:refresh-header-classics:${versions.smart_refresh}"
+smart_refresh.header_radar = "com.scwang.smart:refresh-header-radar:${versions.smart_refresh}"
+smart_refresh.header_falsify = "com.scwang.smart:refresh-header-falsify:${versions.smart_refresh}"
+smart_refresh.header_material = "com.scwang.smart:refresh-header-material:${versions.smart_refresh}"
+smart_refresh.header_two = "com.scwang.smart:refresh-header-two-level:${versions.smart_refresh}"
+smart_refresh.footer_ball = "com.scwang.smart:refresh-footer-ball:${versions.smart_refresh}"
+smart_refresh.footer_classics = "com.scwang.smart:refresh-footer-classics:${versions.smart_refresh}"
+deps.smart_refresh = smart_refresh
+
+deps.material = "com.google.android.material:material:${versions.material}"
+
+deps.constraint_layout = "androidx.constraintlayout:constraintlayout:${versions.constraint_layout}"
+
+deps.PictureSelector = "com.github.LuckSiege.PictureSelector:picture_library:${versions.PictureSelector}"
+
+
+deps.permissionx = "com.permissionx.guolindev:permissionx:${versions.permissionx}"
+deps.jsoup = "org.jsoup:jsoup:${versions.jsoup}"
+deps.BasePopup = "com.github.razerdp:BasePopup:${versions.BasePopup}"
+deps.agentweb = "com.just.agentweb:agentweb:${versions.agentweb}"
+
+
+deps.jiaozivideoplayer = "cn.jzvd:jiaozivideoplayer:${versions.jiaozivideoplayer}"
+deps.wmrichtexteditor = "com.github.widemouth-dz:wmrichtexteditor:${versions.wmrichtexteditor}"
+deps.richeditor_android = "jp.wasabeef:richeditor-android:${versions.richeditor_android}"
+deps.BannerViewPager = "com.github.zhpanvip:BannerViewPager:${versions.BannerViewPager}"
+deps.fab = "com.github.clans:fab:${versions.fab}"
+
+deps.PatternLocker = "com.github.ihsg:PatternLocker:${versions.PatternLocker}"
+deps.codec = "org.apache.directory.studio:org.apache.commons.codec:${versions.codec}"
+deps.zxing = "cn.yipianfengye.android:zxing-library:${versions.zxing}"
+
+deps.swipe_refresh = "androidx.swiperefreshlayout:swiperefreshlayout:${versions.swipe_refresh}"
+
+
+deps.data_store = "androidx.datastore:datastore-preferences:${versions.data_store}"
+
+deps.mp_chart = "com.github.PhilJay:MPAndroidChart:${versions.mp_chart}"
+
+deps.drop_down_menu = "com.github.dongjunkun:DropDownMenu:1.0.4"
+
+deps.range_seekbar = "com.appyvet:materialrangebar:1.4.8"
+
+ext.deps = deps

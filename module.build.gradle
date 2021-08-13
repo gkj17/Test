@@ -1,0 +1,91 @@
+apply from: "../config.gradle"
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+android {
+    compileSdkVersion build_versions.compile_sdk
+    buildToolsVersion build_versions.build_tools
+    defaultConfig {
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode build_versions.version_code
+        versionName build_versions.version_name
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"]
+            }
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildFeatures {
+        dataBinding = true
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    ndkVersion = "23.0.7196353"
+}
+
+
+dependencies {
+    implementation deps.swipe_refresh
+
+    implementation deps.paging.runtime
+
+    implementation deps.room.runtime
+    implementation deps.room.ktx
+
+    implementation deps.navigation.runtime
+    implementation deps.navigation.runtime_ktx
+    implementation deps.navigation.fragment
+    implementation deps.navigation.fragment_ktx
+    implementation deps.navigation.ui
+    implementation deps.navigation.ui_ktx
+
+    implementation deps.hilt.hilt_android
+    implementation deps.hilt.lifecycle_viewmodel
+
+    implementation deps.lifecycle.runtime
+    implementation deps.lifecycle.java8
+    implementation deps.lifecycle.compiler
+    implementation deps.lifecycle.viewmodel_ktx
+    implementation deps.lifecycle.livedata_ktx
+    implementation deps.lifecycle.viewmodel_savestate
+
+    implementation deps.fragment.runtime
+    implementation deps.fragment.ktx
+
+    kapt deps.hilt.compiler
+    kapt deps.hilt.hilt_compiler
+    kapt deps.room.compiler
+//    kapt deps.glide.compiler
+    kapt deps.lifecycle.compiler
+
+    implementation deps.lottie
+
+
+//    kapt "androidx.room:room-compiler:2.3.0-alpha04"
+//    kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
+}
+
+
+
