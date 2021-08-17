@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     val viewModel: MZViewModel by viewModels()
 
+    var hasSave = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -27,14 +28,18 @@ class MainActivity : AppCompatActivity() {
         binding.save.setOnClickListener {
             viewModel.save()
             Toast.makeText(this, "save successfully!", Toast.LENGTH_SHORT).show()
+            hasSave = true
         }
         binding.get.setOnClickListener {
-            lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
-                throwable.printStackTrace()
-            }) {
-                val value = viewModel.get().value as Int
-                println(value)
-            }
+            if (hasSave)
+                lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
+                    throwable.printStackTrace()
+                }) {
+                    val value = viewModel.get().value as Int
+                    println(value)
+                }
+            else
+                Toast.makeText(this, "Please save the data first!", Toast.LENGTH_SHORT).show()
         }
     }
 
