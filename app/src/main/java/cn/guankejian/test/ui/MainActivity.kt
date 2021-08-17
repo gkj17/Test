@@ -10,7 +10,9 @@ import cn.guankejian.test.MZViewModel
 import cn.guankejian.test.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
@@ -31,14 +33,21 @@ class MainActivity : AppCompatActivity() {
             hasSave = true
         }
         binding.get.setOnClickListener {
-            if (hasSave)
+            if (hasSave) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "see the log, it will print \n[java.lang.ClassCastException: java.lang.Double cannot be cast to java.lang.Integer]",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 lifecycleScope.launch(CoroutineExceptionHandler { _, throwable ->
                     throwable.printStackTrace()
                 }) {
                     val value = viewModel.get().value as Int
                     println(value)
+
                 }
-            else
+            } else
                 Toast.makeText(this, "Please save the data first!", Toast.LENGTH_SHORT).show()
         }
     }
