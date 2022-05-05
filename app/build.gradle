@@ -1,10 +1,14 @@
 apply from: "../module.build.gradle"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: "androidx.navigation.safeargs.kotlin"
+apply plugin: 'dagger.hilt.android.plugin'
 
 dependencies {
     implementation deps.glide.runtime
     kapt deps.glide.compiler
     implementation deps.okhttp.okhttp_logging_interceptor
 
-    implementation deps.retrofit.gson
+    implementation deps.lifecycle.runtime_ktx
 
 }

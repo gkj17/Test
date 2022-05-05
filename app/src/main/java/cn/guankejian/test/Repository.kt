@@ -13,18 +13,19 @@ import javax.inject.Inject
 class Repository @Inject constructor(application: Application) {
     val db: MeiNvDatabase = MeiNvDatabase.getInstance(application)
 
+
+
     @ExperimentalPagingApi
     fun captureTag(
     ): Flow<PagingData<MZTag>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 4
+                pageSize = 12
             ),
-            remoteMediator = TagMediator(db)
+            remoteMediator = TagMediator(db,"list_mediator")
         ) {
             db.mzTagDao().getAll()
-        }
-            .flow
+        }.flow
     }
 
 

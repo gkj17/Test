@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="dimen_floatbutton_bottom">64dp</dimen>
+    <dimen name="dimen_very_big">24dp</dimen>
+    <dimen name="dimen_big">20dp</dimen>
+    <dimen name="dimen_common">16dp</dimen>
+    <dimen name="dimen_medium">12dp</dimen>
+    <dimen name="dimen_small">4dp</dimen>
+    <dimen name="dimen_very_small">2dp</dimen>
+    <dimen name="dimen_very_very_very_small">1dp</dimen>
+    <dimen name="dimen_very_very_small">2dp</dimen>
+
+    <dimen name="cardview_elevation_small">3dp</dimen>
+
+</resources>
