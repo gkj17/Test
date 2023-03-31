@@ -4,6 +4,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: "androidx.navigation.safeargs.kotlin"
 
 android {
     compileSdkVersion build_versions.compile_sdk
@@ -69,6 +70,7 @@ dependencies {
     implementation deps.lifecycle.compiler
     implementation deps.lifecycle.viewmodel_ktx
     implementation deps.lifecycle.livedata_ktx
+    implementation deps.lifecycle.runtime_ktx
     implementation deps.lifecycle.viewmodel_savestate
 
     implementation deps.fragment.runtime
