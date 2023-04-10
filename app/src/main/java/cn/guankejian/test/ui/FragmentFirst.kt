@@ -1,69 +1,46 @@
 package cn.guankejian.test.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
-import androidx.paging.CombinedLoadStates
 import androidx.paging.ExperimentalPagingApi
-import androidx.paging.LoadState
-import androidx.recyclerview.widget.ConcatAdapter
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import cn.guankejian.test.MZTagAdapter
-import cn.guankejian.test.MZViewModel
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import cn.guankejian.test.R
-import cn.guankejian.test.base.BasePagingDataAdapter
-import cn.guankejian.test.bean.UIModel
-import cn.guankejian.test.databinding.ActivityMainBinding
 import cn.guankejian.test.databinding.FragmentFirstBinding
-import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.navigation.NavigationBarView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @ExperimentalPagingApi
 @AndroidEntryPoint
 class FragmentFirst @Inject constructor(
-) : Fragment(),
-    BasePagingDataAdapter.OnItemClickListener,
-    SwipeRefreshLayout.OnRefreshListener {
-    var job: Job? = null
-    var otherJob: Job? = null
-    var stateJob: Job? = null
+) : Fragment(), NavigationBarView.OnItemSelectedListener {
     private lateinit var binding: FragmentFirstBinding
 
-    @Inject
-    lateinit var adapter: MZTagAdapter
+    private lateinit var tabFragmentsCreators: Map<Int, () -> Fragment>
+
+    lateinit var one: FragmentDetail
+    lateinit var two: FragmentTest
+    lateinit var three: FragmentTest
+
+
+
     val controller: NavController by lazy { findNavController() }
 
-
-    val viewModel: MZViewModel by navGraphViewModels(R.id.main_nav){
-        defaultViewModelProviderFactory
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_first, container, false)
         return binding.root
     }
@@ -71,80 +48,61 @@ class FragmentFirst @Inject constructor(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initVar()
-        initData()
-        adapter.setOnItemClickListener(this)
     }
 
 
 
     fun initVar() {
-        binding.let {
-            it.refreshLayout.setOnRefreshListener(this)
-            it.rv.adapter =ConcatAdapter(adapter)
-        }
-    }
+       one = FragmentDetail()
+       two = FragmentTest("two")
+       three = FragmentTest("three")
 
-    fun initData() {
-        initFlow()
-    }
+        tabFragmentsCreators = mapOf(
+            0 to { one },
+            1 to { two },
+            2 to { three },
+        )
 
-    fun flowStateManager(
-        loadStates: CombinedLoadStates,
-        itemCount: Int
-    ) {
-        binding.refreshLayout.isRefreshing = false/*loadStates.refresh is LoadState.Loading*/
-        binding.refreshLayout.isEnabled =
-            loadStates.refresh !is LoadState.Loading && loadStates.append !is LoadState.Loading && loadStates.prepend !is LoadState.Loading
+        binding.vp.adapter =
+            object : FragmentStateAdapter(childFragmentManager, viewLifecycleOwner.lifecycle) {
+                override fun createFragment(position: Int): Fragment {
+                    return tabFragmentsCreators[position]?.invoke() ?: throw IndexOutOfBoundsException()
+                }
 
-    }
-
-    private fun initFlow() {
-        job?.cancel()
-        job = viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.captureTag().collectLatest {
-                    adapter.submitData(it)
+                override fun getItemCount(): Int {
+                    return tabFragmentsCreators.size
                 }
             }
-        }
 
 
-        stateJob?.cancel()
-        stateJob=viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                adapter.loadStateFlow.collectLatest { loadStates ->
-                    flowStateManager(loadStates, adapter.itemCount)
-                }
+
+
+        binding.bottomNavView.setOnItemSelectedListener(this)
+
+        binding.vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                binding.bottomNavView.menu.getItem(position).isChecked = true
+            }
+        })
+
+    }
+
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.one -> {
+                binding.vp.setCurrentItem(0, true)
+            }
+            R.id.two -> {
+                binding.vp.setCurrentItem(1, true)
+            }
+            R.id.three -> {
+                binding.vp.setCurrentItem(2, true)
             }
         }
-
-        otherJob?.cancel()
-        otherJob=viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                adapter.loadStateFlow
-                    .distinctUntilChangedBy { it.refresh }
-                    .collectLatest {
-                        if (it.refresh is LoadState.Error)
-                            Snackbar.make(binding.coordinator, "网络错误", Snackbar.LENGTH_SHORT)
-                                .show()
-                    }
-            }
-        }
-
-
-
+        return false
     }
 
-    override fun onItemClick(adapter: BasePagingDataAdapter<*, *>, view: View, position: Int) {
-        val item = adapter.getItemData(position)
-        if(item is UIModel.IconItem){
-            controller.navigate(FragmentFirstDirections.toSecond())
-//            startActivity(Intent(this,DetailActivity::class.java))
-        }
-    }
-
-    override fun onRefresh() {
-        adapter.refresh()
-    }
 
 }
