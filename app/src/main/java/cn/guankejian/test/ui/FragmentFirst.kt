@@ -98,8 +98,8 @@ class FragmentFirst @Inject constructor(
     binding.surface.holder.addCallback(object : SurfaceHolder.Callback {
       override fun surfaceCreated(holder: SurfaceHolder) {
         playVideo("sintel.mp4")
-        drawImageOnSurface(holder)
-        drawImage()
+//        drawImageOnSurface(holder)
+
       }
 
       override fun surfaceChanged(
@@ -108,7 +108,7 @@ class FragmentFirst @Inject constructor(
         width: Int,
         height: Int
       ) {
-        drawImageOnSurface(holder)
+//        drawImageOnSurface(holder)
       }
 
       override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -117,20 +117,10 @@ class FragmentFirst @Inject constructor(
 
     })
 
-
-
-
-
-
-
     val density = resources.displayMetrics.density
     val offset = (100 * density).toInt()
-
-
     binding.icon.setOnClickListener {
-
-
-
+      drawImage()
       if (!hasClick) {
         blurImg()
         it.startAnimation(TranslateAnimation(0f, offset.toFloat(), 0f, -offset.toFloat()).apply {
@@ -139,7 +129,6 @@ class FragmentFirst @Inject constructor(
         })
       }
       else {
-        drawImage()
         it.startAnimation(TranslateAnimation(offset.toFloat(), 0f, -offset.toFloat(), 0f).apply {
           duration = DURATION
           fillAfter = true
@@ -147,21 +136,16 @@ class FragmentFirst @Inject constructor(
       }
       hasClick = !hasClick
 
-// 启动动画
-//            view.startAnimation(animation);
     }
     return binding.root
   }
 
   private fun applyBlur(blurRadius: Float) {
     lifecycleScope.launch(Dispatchers.Main) {
-
         binding.trans.alpha = blurRadius.coerceIn(0.2f,1f)
         binding.icon.alpha = 1-blurRadius.coerceIn(0f,0.4f)
     }
   }
-
-  private lateinit var rotatedBitmap: Bitmap
 
   fun blurImg() {
     // 在协程中逐渐增加模糊效果
@@ -182,18 +166,16 @@ class FragmentFirst @Inject constructor(
           applyBlur(currentBlurRadius)
         }
 
-        delay(16) // 每16毫秒更新一次模糊效果
+        delay(5) // 每16毫秒更新一次模糊效果
         elapsedTime = System.currentTimeMillis() - startTime
+        if(elapsedTime >= durationMillis){
+          applyBlur(1f)
+        }
       }
     }
   }
 
   var hasClick = false
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-  }
-
 
   fun playVideo(videoName: String) {
     releaseMediaPlayer()
