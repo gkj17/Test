@@ -1,22 +1,27 @@
 package cn.guankejian.test.ui
 
-import android.graphics.*
-import android.media.MediaPlayer
+import android.content.ContentUris
+import android.content.Context
+import androidx.exifinterface.media.ExifInterface
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.view.*
-import android.view.animation.TranslateAnimation
-import androidx.core.content.ContentProviderCompat.requireContext
+import android.provider.MediaStore
+import android.provider.MediaStore.Images.ImageColumns.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.database.getStringOrNull
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
-import cn.guankejian.test.*
+import cn.guankejian.test.R
 import cn.guankejian.test.databinding.FragmentFirstBinding
+import cn.guankejian.test.logE
+import com.hjq.permissions.OnPermissionCallback
+import com.hjq.permissions.Permission
+import com.hjq.permissions.XXPermissions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -26,180 +31,250 @@ class FragmentFirst @Inject constructor(
 ) : Fragment(){
   private lateinit var binding: FragmentFirstBinding
 
-  private var mediaPlayer: MediaPlayer? = null
 
-  fun drawImage(){
-    binding.icon.alpha = 1f
-
-    binding.surface.apply{
-       post {
-         screenshot(object:ScreenShotCallback{
-           override fun success(bitmap: Bitmap) {
-             lifecycleScope.launch(Dispatchers.Default) {
-               val blurredBitmap = BlurUtil.blur(requireContext(), bitmap, 25f)
-
-               withContext(Dispatchers.Main) {
-                 binding.trans.apply{
-                   setImageBitmap(blurredBitmap)
-                   alpha = 0f
-                 }
-               }
-             }
-           }
-         })
-       }
-     }
-
-  }
-
-  fun drawImageOnSurface(holder: SurfaceHolder) {
-    val paint = Paint()
-    paint.isAntiAlias = true
-    paint.style = Paint.Style.STROKE
-    val bitmap = BitmapFactory.decodeResource(
-      resources,
-      R.drawable.img2
-    )
-    bitmap.logE()
-    val matrix = Matrix()
-
-    // 设置旋转角度（以度为单位）
-    val rotationDegrees = 90f
-    matrix.postRotate(rotationDegrees)
-    // 根据旋转矩阵创建一个新的旋转后的 Bitmap 对象
-    val rotatedBitmap = Bitmap.createBitmap(
-      bitmap,
-      0,
-      0,
-      bitmap.width,
-      bitmap.height,
-      matrix,
-      true
-    )
-    val canvas: Canvas = holder.lockCanvas() // 先锁定当前surfaceView的画布
-
-    canvas.drawBitmap(rotatedBitmap, 0f, 0f, null) //执行绘制操作
-
-    holder.unlockCanvasAndPost(canvas) // 解除锁定并显示在界面上
-  }
-
-  val DURATION = 500L
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    binding = DataBindingUtil.inflate(inflater, R.layout.fragment_first, container, false)
 
-//    binding.surface.holder.addCallback(this)
+    binding = DataBindingUtil.inflate(LayoutInflater.from(requireContext()), R.layout.fragment_first,container,false)
+    val list = getStoragePublicUrls(requireContext(), types= *arrayOf(ResourceType.ResourceOther))
 
-
-
-    binding.surface.holder.addCallback(object : SurfaceHolder.Callback {
-      override fun surfaceCreated(holder: SurfaceHolder) {
-        playVideo("sintel.mp4")
-//        drawImageOnSurface(holder)
-
-      }
-
-      override fun surfaceChanged(
-        holder: SurfaceHolder,
-        format: Int,
-        width: Int,
-        height: Int
-      ) {
-//        drawImageOnSurface(holder)
-      }
-
-      override fun surfaceDestroyed(holder: SurfaceHolder) {
-        releaseMediaPlayer()
-      }
-
-    })
-
-    val density = resources.displayMetrics.density
-    val offset = (100 * density).toInt()
-    binding.icon.setOnClickListener {
-      drawImage()
-      if (!hasClick) {
-        blurImg()
-        it.startAnimation(TranslateAnimation(0f, offset.toFloat(), 0f, -offset.toFloat()).apply {
-          duration = DURATION
-          fillAfter = true
-        })
-      }
-      else {
-        it.startAnimation(TranslateAnimation(offset.toFloat(), 0f, -offset.toFloat(), 0f).apply {
-          duration = DURATION
-          fillAfter = true
-        })
-      }
-      hasClick = !hasClick
-
-    }
+    list
     return binding.root
   }
 
-  private fun applyBlur(blurRadius: Float) {
-    lifecycleScope.launch(Dispatchers.Main) {
-        binding.trans.alpha = blurRadius.coerceIn(0.2f,1f)
-        binding.icon.alpha = 1-blurRadius.coerceIn(0f,0.4f)
-    }
+
+  fun getStoragePublicUrls(
+    context: Context,
+    projection: Array<String>? = null,
+    selection: String? = null,
+    selectionArgs: Array<String>? = null,
+    sortOrder: String? = null,
+    vararg types: ResourceType
+  ): List<Uri> {
+    return types.map {
+      getStoragePublicUrl(context,it,projection, selection, selectionArgs, sortOrder)
+    }.flatten()
   }
 
-  fun blurImg() {
-    // 在协程中逐渐增加模糊效果
-    val durationMillis = DURATION
-    viewLifecycleOwner.lifecycleScope.launch {
-
-      val startTime = System.currentTimeMillis()
-      var elapsedTime = 100L
-
-      while (elapsedTime < durationMillis) {
-        val progress = elapsedTime.toFloat() / durationMillis
-        val currentBlurRadius = (1f) * progress
-
-
-        withContext(Dispatchers.Main) {
-          "加载了 currentBlurRadius = ${currentBlurRadius}".logE()
-
-          applyBlur(currentBlurRadius)
-        }
-
-        delay(5) // 每16毫秒更新一次模糊效果
-        elapsedTime = System.currentTimeMillis() - startTime
-        if(elapsedTime >= durationMillis){
-          applyBlur(1f)
-        }
+  fun getStoragePublicUrl(
+    context: Context,
+    type: ResourceType,
+    projection: Array<String>? = null,
+    selection: String? = null,
+    selectionArgs: Array<String>? = null,
+    sortOrder: String? = null
+  ): List<Uri> {
+    val resultList = ArrayList<Uri>()
+    val resolver = context.contentResolver
+    val uri = when (type) {
+      ResourceType.ResourceAudio -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+      ResourceType.ResourceImage -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+      ResourceType.ResourceVideo -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      ResourceType.ResourceOther -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Downloads.EXTERNAL_CONTENT_URI
+      } else {
+        return emptyList()
       }
     }
-  }
 
-  var hasClick = false
+    val resultCursor = resolver?.query(
+      uri,
+      projection,
+      selection,
+      selectionArgs,
+      sortOrder
+    )
+    resultCursor?.use {
+      val idColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+//      val id = it.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+//      val id = it.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE)
 
-  fun playVideo(videoName: String) {
-    releaseMediaPlayer()
 
-    val afd = requireContext().assets.openFd(videoName)
-    val fd = afd.fileDescriptor
+      val date_addedColumn  = it.getColumnIndexOrThrow(DATE_ADDED)
+      val date_modifiedColumn  = it.getColumnIndexOrThrow(DATE_MODIFIED)
+      val date_takenColumn  = it.getColumnIndexOrThrow(DATE_TAKEN)
+      val display_nameColumn  = it.getColumnIndexOrThrow(DISPLAY_NAME)
+      val durationColumn  = it.getColumnIndexOrThrow(DURATION)
+      val heightColumn  = it.getColumnIndexOrThrow(HEIGHT)
+      val is_favoriteColumn  = it.getColumnIndexOrThrow(IS_FAVORITE)
+      val is_pendingColumn  = it.getColumnIndexOrThrow(IS_PENDING)
+      val is_trashedColumn  = it.getColumnIndexOrThrow(IS_TRASHED)
+      val mime_typeColumn  = it.getColumnIndexOrThrow(MIME_TYPE)
+      val relative_pathColumn  = it.getColumnIndexOrThrow(RELATIVE_PATH)
+      val sizeColumn  = it.getColumnIndexOrThrow(SIZE)
+      //title没有后缀
+      val titleColumn  = it.getColumnIndexOrThrow(TITLE)
+      val widthColumn  = it.getColumnIndexOrThrow(WIDTH)
+      val descriptionColumn = it.getColumnIndexOrThrow(DESCRIPTION)
 
-    mediaPlayer = MediaPlayer()
-    mediaPlayer?.setDataSource(fd,afd.startOffset,afd.length)
-    mediaPlayer?.setDisplay(binding.surface.holder)
-    mediaPlayer?.prepareAsync()
+      while (it.moveToNext()) {
+        val fileId = it.getLong(idColumn)
 
-    mediaPlayer?.setOnPreparedListener {
-      mediaPlayer?.start()
+        val description = it.getStringOrNull(descriptionColumn)
+
+        val display_name = it.getString(display_nameColumn)
+        val is_favorite = it.getString(is_favoriteColumn)
+        val is_pending = it.getString(is_pendingColumn)
+        val is_trashed = it.getString(is_trashedColumn)
+        val mime_type = it.getStringOrNull(mime_typeColumn)?:continue
+        val relative_path = it.getString(relative_pathColumn)
+        val title = it.getString(titleColumn)
+
+        var latitude = 0.0
+        var longitude = 0.0
+        val duration = it.getLong(durationColumn)
+        val date_added = it.getLong(date_addedColumn)*1000
+        val date_modified = it.getLong(date_modifiedColumn)*1000
+        val date_taken = it.getLong(date_takenColumn)
+        val height = it.getLong(heightColumn)
+        val size = it.getLong(sizeColumn)
+        val width = it.getLong(widthColumn)
+
+        /**
+         * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
+         * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+         */
+        val pathUri = ContentUris.withAppendedId(uri, fileId)
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+
+          val tmpUri = MediaStore.setRequireOriginal(pathUri)
+          resolver.openInputStream(tmpUri)?.use { stream ->
+            ExifInterface(stream).latLong?.run {
+              latitude = this[0]
+              longitude = this[1]
+            }
+          }
+        }else{
+          val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
+          val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
+          latitude = it.getDouble(latitudeColumn)
+          longitude = it.getDouble(longitudeColumn)
+        }
+
+
+        resultList.add(pathUri)
+      }
     }
+
+    return resultList
   }
 
-  private fun releaseMediaPlayer() {
-    mediaPlayer?.let {
-      it.stop()
-      it.release()
-      mediaPlayer = null
-    }
+  /*
+  * BOOKMARK
+    CATEGORY
+    COLOR_RANGE
+    COLOR_STANDARD
+    COLOR_TRANSFER
+    DESCRIPTION
+    IS_PRIVATE
+    LANGUAGE
+  *
+  * */
+
+//  open class FileInfo(
+//    val name:String,
+//    val uri:Uri,
+//    val length:Long,
+//    val mimeType:String,
+//    val dateAdded:Long,
+//    val dateModified:Long,
+//  )
+//
+//  class ImageInfo(
+//    val width:Int,
+//    val height:Int,
+//    name: String,
+//    uri: Uri,
+//    length: Long,
+//    mimeType: String,
+//    dateAdded: Long,
+//    dateModified: Long,
+//  ): FileInfo(name, uri, length, mimeType, dateAdded, dateModified)
+
+  sealed class FileInfo(
+
+  ){
+    abstract val displayName:String
+    abstract val title:String
+    abstract val uri:Uri
+    abstract val size:Long
+    abstract val mimeType:String
+    abstract val dateAdded:Long
+    abstract val dateModified:Long
+    abstract val relativePath:Long
+
+    data class ImageInfo(
+      override val displayName: String,
+      override val uri: Uri,
+      override val size: Long,
+      override val mimeType: String,
+      override val dateAdded: Long,
+      override val dateModified: Long,
+      override val title:String,
+      val dateTaken:Long,
+      val width:Int,
+      val height:Int,
+      val latitude:Double,
+      val longitude:Double,
+      val description:String,
+      val is_favorite:String,
+      val is_trashed:String,
+      override val relativePath: Long,
+    ) : FileInfo()
+    data class VideoInfo(
+      override val displayName: String,
+      override val uri: Uri,
+      override val size: Long,
+      override val mimeType: String,
+      override val dateAdded: Long,
+      override val dateModified: Long,
+      override val relativePath: Long,
+      override val title:String,
+      val description:String,
+      val is_favorite:String,
+      val is_trashed:String,
+      val latitude:Double,
+      val longitude:Double,
+      val duration:String,
+      val height:Int,
+      val width:Int,
+    ) : FileInfo()
+    data class AudioInfo(
+      override val displayName: String,
+      override val uri: Uri,
+      override val size: Long,
+      override val relativePath: Long,
+      override val mimeType: String,
+      override val dateAdded: Long,
+      override val dateModified: Long,
+      override val title:String,
+      val duration:String,
+    ) : FileInfo()
+    data class OtherInfo(
+      override val displayName: String,
+      override val uri: Uri,
+      override val size: Long,
+      override val mimeType: String,
+      override val title:String,
+      override val dateAdded: Long,
+      override val relativePath: Long,
+      override val dateModified: Long
+    ) : FileInfo()
   }
 
+
+
+
+
+  sealed class ResourceType {
+    object ResourceImage : ResourceType()
+    object ResourceVideo : ResourceType()
+    object ResourceAudio : ResourceType()
+    object ResourceOther : ResourceType()
+  }
 
 }

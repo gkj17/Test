@@ -10,7 +10,9 @@ dependencies {
     kapt deps.glide.compiler
     implementation deps.okhttp.okhttp_logging_interceptor
 
+
     implementation deps.retrofit.gson
+    implementation 'com.github.getActivity:XXPermissions:18.3'
     implementation deps.coil.runtime
 
 }
