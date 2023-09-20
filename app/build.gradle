@@ -1,10 +1,4 @@
 apply from: "../module.build.gradle"
-android{
-    defaultConfig{
-        renderscriptTargetApi 19
-        renderscriptSupportModeEnabled true
-    }
-}
 dependencies {
     implementation deps.glide.runtime
     kapt deps.glide.compiler

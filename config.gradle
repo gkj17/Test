@@ -2,7 +2,7 @@
 def build_versions = [:]
 
 build_versions.min_sdk = 24
-build_versions.compile_sdk = 30
+build_versions.compile_sdk = 31
 build_versions.target_sdk = 24
 build_versions.build_tools = "30.0.3"
 build_versions.version_code = 1
@@ -19,10 +19,10 @@ versions.kotlin = "1.4.32"
 
 versions.paging = "3.0.0"
 versions.room = "2.3.0"
-versions.navigation = "2.4.0-alpha04"
+versions.navigation = "2.5.3"
 versions.retrofit = "2.7.2"
 versions.preference = "1.1.1"
-versions.hilt = "1.1.1"
+versions.hilt = "2.44"
 versions.biometric = "1.2.0-alpha01"
 versions.lifecycle = "2.4.0-alpha03"
 versions.androidbrowserhelper = "2.2.0"
@@ -113,10 +113,10 @@ deps.preference = preference
 
 
 def hilt = [:]
-hilt.hilt_android = "com.google.dagger:hilt-android:2.37"
-hilt.hilt_android_gradle_plugin = "com.google.dagger:hilt-android-gradle-plugin:2.37"
+hilt.hilt_android = "com.google.dagger:hilt-android:$versions.hilt"
+hilt.hilt_android_gradle_plugin = "com.google.dagger:hilt-android-gradle-plugin:$versions.hilt"
 hilt.lifecycle_viewmodel = "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
-hilt.compiler = "com.google.dagger:hilt-android-compiler:2.37"
+hilt.compiler = "com.google.dagger:hilt-android-compiler:$versions.hilt"
 hilt.hilt_compiler = "androidx.hilt:hilt-compiler:1.0.0-alpha03"
 deps.hilt = hilt
 

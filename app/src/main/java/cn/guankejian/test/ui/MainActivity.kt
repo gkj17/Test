@@ -9,9 +9,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import cn.guankejian.test.R
 import cn.guankejian.test.databinding.ActivityMainBinding
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
