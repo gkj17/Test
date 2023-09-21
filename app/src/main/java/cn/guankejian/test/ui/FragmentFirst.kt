@@ -42,10 +42,18 @@ class FragmentFirst constructor(
       container,
       false
     )
-    val imageList: List<FilesInfo.ImageInfo> = getImageInfoList(requireContext().contentResolver)
-//    val videoList: List<FilesInfo.VideoInfo> = getVideoInfoList(requireContext().contentResolver)
-//    val audioList: List<FilesInfo.AudioInfo> = getAudioInfoList(requireContext().contentResolver)
-//    val downloadList: List<FileInfo> = getDownloadInfoList(requireContext().contentResolver)
+    val imageList: MutableList<FilesInfo.ImageInfo> = getImageInfoList(requireContext().contentResolver).toMutableList()
+    val videoList: MutableList<FilesInfo.VideoInfo> = getVideoInfoList(requireContext().contentResolver).toMutableList()
+    val audioList: MutableList<FilesInfo.AudioInfo> = getAudioInfoList(requireContext().contentResolver).toMutableList()
+    val otherList: MutableList<FilesInfo.OtherInfo> = ArrayList()
+    getDownloadInfoList(requireContext().contentResolver).map {
+      when(it.type){
+        is ResourceType.ResourceImage-> imageList.add(it.item as FilesInfo.ImageInfo)
+        is ResourceType.ResourceVideo-> videoList.add(it.item as FilesInfo.VideoInfo)
+        is ResourceType.ResourceAudio-> audioList.add(it.item as FilesInfo.AudioInfo)
+        is ResourceType.ResourceOther-> otherList.add(it.item as FilesInfo.OtherInfo)
+      }
+    }
 
 //    downloadList
     "123"
@@ -53,22 +61,10 @@ class FragmentFirst constructor(
   }
 
 
-  fun getVideoInfoList(
-    resolver: ContentResolver,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null,
-    sortOrder: String? = null
-  ): List<FilesInfo.VideoInfo> {
+  fun getVideoInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.VideoInfo> {
     val resultList = ArrayList<FilesInfo.VideoInfo>()
     val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-    val resultCursor = resolver.query(
-      uri,
-      projection,
-      selection,
-      selectionArgs,
-      sortOrder
-    )
+    val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
     resultCursor?.use {
       val idColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
 
@@ -78,7 +74,6 @@ class FragmentFirst constructor(
       val descriptionColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.DESCRIPTION)
       val dateAddedColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
       val dateModifiedColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_MODIFIED)
-      val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.RELATIVE_PATH)
       val sizeColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
       val durationColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
       val heightColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
@@ -86,15 +81,26 @@ class FragmentFirst constructor(
 
 
 
-      while (it.moveToNext()) {
-        getVideoInfo(it,idColumn,displayNameColumn,titleColumn,mimeTypeColumn,descriptionColumn,dateAddedColumn,dateModifiedColumn,relativePathColumn,sizeColumn,durationColumn,heightColumn,widthColumn,uri,resolver,resultList)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
+        while (it.moveToNext()) {
+          getVideoInfo(it,idColumn, displayNameColumn, titleColumn, mimeTypeColumn, descriptionColumn, dateAddedColumn, dateModifiedColumn, relativePathColumn, sizeColumn, durationColumn, heightColumn, widthColumn, uri, resolver, resultList)
+        }
+      }else{
+        val dataColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        while (it.moveToNext()) {
+          getVideoInfoLessThanQ(it,idColumn, displayNameColumn, titleColumn, mimeTypeColumn, descriptionColumn, dateAddedColumn, dateModifiedColumn, dataColumn, sizeColumn, durationColumn, heightColumn, widthColumn, uri, resolver, resultList)
+        }
       }
+
+
     }
 
     return resultList
   }
 
-  private fun getVideoInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,titleColumn: Int,mimeTypeColumn: Int,descriptionColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,relativePathColumn: Int,sizeColumn: Int,durationColumn: Int,heightColumn: Int,widthColumn: Int ,uri: Uri,resolver: ContentResolver,resultList: ArrayList<FilesInfo.VideoInfo>) {
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun getVideoInfo(it: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, relativePathColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>) {
     val id = it.getLong(idColumn)
     val displayName = it.getString(displayNameColumn)
     val title = it.getString(titleColumn)
@@ -117,59 +123,63 @@ class FragmentFirst constructor(
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val tmpUri = MediaStore.setRequireOriginal(pathUri)
-      resolver.openInputStream(tmpUri)?.use { stream ->
-        ExifInterface(stream).latLong?.run {
-          latitude = this[0]
-          longitude = this[1]
-        }
+
+    val tmpUri = MediaStore.setRequireOriginal(pathUri)
+    resolver.openInputStream(tmpUri)?.use { stream ->
+      ExifInterface(stream).latLong?.run {
+        latitude = this[0]
+        longitude = this[1]
       }
-    } else {
-      val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
-      val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
-      latitude = it.getDouble(latitudeColumn)
-      longitude = it.getDouble(longitudeColumn)
     }
 
 
-    val item = FilesInfo.VideoInfo(
-      pathUri,
-      displayName,
-      title,
-      mimeType,
-      description,
-      relativePath,
-      dateAdded,
-      dateModified,
-      size,
-      duration,
-      height,
-      width,
-      latitude,
-      longitude
-    )
+
+    val item = FilesInfo.VideoInfo(pathUri,displayName,title,mimeType,description,relativePath,dateAdded,dateModified,size,duration,height,width,latitude,longitude)
 
     resultList.add(item)
   }
 
-  fun getImageInfoList(
-    resolver: ContentResolver,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null,
-    sortOrder: String? = null
-  ): List<FilesInfo.ImageInfo> {
+  private fun getVideoInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,titleColumn: Int,mimeTypeColumn: Int,descriptionColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,dataColumn: Int,sizeColumn: Int,durationColumn: Int,heightColumn: Int,widthColumn: Int ,uri: Uri,resolver: ContentResolver,resultList: ArrayList<FilesInfo.VideoInfo>) {
+    val id = it.getLong(idColumn)
+    val displayName = it.getString(displayNameColumn)
+    val dateAdded = it.getLong(dateAddedColumn)*1000
+    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
+    val title = it.getString(titleColumn)
+    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
+    val size = it.getLong(sizeColumn)
+    val dateModified = it.getLong(dateModifiedColumn)*1000
+    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
+    val duration = it.getLong(durationColumn)
+
+    val description = it.getStringOrNull(descriptionColumn) ?: ""
+    val width = it.getInt(widthColumn)
+    val height = it.getInt(heightColumn)
+    var latitude = 0.0
+    var longitude = 0.0
+
+
+    /**
+     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
+     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
+     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     */
+    val pathUri = ContentUris.withAppendedId(uri, id)
+    resolver.openInputStream(pathUri)?.use { stream ->
+      ExifInterface(stream).latLong?.run {
+        latitude = this[0]
+        longitude = this[1]
+      }
+    }
+    val item = FilesInfo.VideoInfo(pathUri,displayName,title,mimeType,description,relativePath,dateAdded,dateModified,size,duration,height,width,latitude,longitude)
+
+    resultList.add(item)
+  }
+
+  fun getImageInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.ImageInfo> {
     val resultList = ArrayList<FilesInfo.ImageInfo>()
     val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
-    val resultCursor = resolver.query(
-      uri,
-      projection,
-      selection,
-      selectionArgs,
-      sortOrder
-    )
+    val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
     resultCursor?.use {
       val idColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
 
@@ -184,7 +194,6 @@ class FragmentFirst constructor(
       val widthColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
       val heightColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
 
-
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
         while (it.moveToNext()) {
@@ -192,10 +201,8 @@ class FragmentFirst constructor(
         }
       }else{
         val dataColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-        val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
-        val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
         while (it.moveToNext()) {
-          getImageInfoLessThanQ(it,idColumn,displayNameColumn,dateAddedColumn,mimeTypeColumn,titleColumn,descriptionColumn,sizeColumn,dateModifiedColumn,dateTakenColumn,dataColumn,widthColumn,heightColumn,uri,latitudeColumn,longitudeColumn,resultList)
+          getImageInfoLessThanQ(it,idColumn,displayNameColumn,dateAddedColumn,mimeTypeColumn,titleColumn,descriptionColumn,sizeColumn,dateModifiedColumn,dateTakenColumn,dataColumn,widthColumn,heightColumn,uri,resolver,resultList)
         }
       }
 
@@ -238,7 +245,7 @@ class FragmentFirst constructor(
     resultList.add(FilesInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
   }
 
-  private fun getImageInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,dataColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,latitudeColumn:Int,longitudeColumn:Int,resultList: MutableList<FilesInfo.ImageInfo>) {
+  private fun getImageInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,dataColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,resolver: ContentResolver,resultList: MutableList<FilesInfo.ImageInfo>) {
     val id = it.getLong(idColumn)
     val displayName = it.getString(displayNameColumn)
     val dateAdded = it.getLong(dateAddedColumn)*1000
@@ -252,8 +259,8 @@ class FragmentFirst constructor(
     val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
     val width = it.getInt(widthColumn)
     val height = it.getInt(heightColumn)
-    val latitude = it.getDouble(latitudeColumn)
-    val longitude = it.getDouble(longitudeColumn)
+    var latitude = 0.0
+    var longitude = 0.0
 
 
     /**
@@ -262,62 +269,51 @@ class FragmentFirst constructor(
      * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
+    resolver.openInputStream(pathUri)?.use { stream ->
+      ExifInterface(stream).latLong?.run {
+        latitude = this[0]
+        longitude = this[1]
+      }
+    }
     resultList.add(FilesInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
 
   }
 
-  fun getAudioInfoList(
-    resolver: ContentResolver,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null,
-    sortOrder: String? = null
-  ): List<FilesInfo.AudioInfo> {
+  fun getAudioInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.AudioInfo> {
     val resultList = ArrayList<FilesInfo.AudioInfo>()
     val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
-    val resultCursor = resolver.query(
-      uri,
-      projection,
-      selection,
-      selectionArgs,
-      sortOrder
-    )
+    val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
     resultCursor?.use {
       val idColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
 
       val displayNameColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
       val mimeTypeColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
       val titleColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-      val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
       val sizeColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
       val dateAddedColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
       val dateModifiedColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
       val durationColumn = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
 
 
-      while (it.moveToNext()) {
-        getAudioInfo(it,idColumn,displayNameColumn,mimeTypeColumn,titleColumn,relativePathColumn,sizeColumn,dateAddedColumn,dateModifiedColumn,durationColumn,uri,resultList)
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
+        while (it.moveToNext()) {
+          getAudioInfo(it,idColumn, displayNameColumn, mimeTypeColumn, titleColumn, relativePathColumn, sizeColumn, dateAddedColumn, dateModifiedColumn, durationColumn, uri, resultList)
+        }
+      }else{
+        val dataColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        while (it.moveToNext()) {
+          getAudioInfoLessThanQ(it,idColumn, displayNameColumn, mimeTypeColumn, titleColumn, dataColumn, sizeColumn, dateAddedColumn, dateModifiedColumn, durationColumn, uri, resultList)
+        }
       }
     }
 
     return resultList
   }
 
-  private fun getAudioInfo(
-    it: Cursor,
-    idColumn: Int,
-    displayNameColumn: Int,
-    mimeTypeColumn: Int,
-    titleColumn: Int,
-    relativePathColumn: Int,
-    sizeColumn: Int,
-    dateAddedColumn: Int,
-    dateModifiedColumn: Int,
-    durationColumn: Int,
-    uri: Uri,
-    resultList: ArrayList<FilesInfo.AudioInfo>
-  ) {
+  private fun getAudioInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,relativePathColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,durationColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.AudioInfo>) {
     val id = it.getLong(idColumn)
 
     val displayName = it.getString(displayNameColumn)
@@ -325,8 +321,8 @@ class FragmentFirst constructor(
     val title = it.getString(titleColumn)
     val relativePath = it.getString(relativePathColumn)
     val size = it.getLong(sizeColumn)
-    val dateAdded = it.getLong(dateAddedColumn)
-    val dateModified = it.getLong(dateModifiedColumn)
+    val dateAdded = it.getLong(dateAddedColumn)*1000
+    val dateModified = it.getLong(dateModifiedColumn)*1000
     val duration = it.getLong(durationColumn)
 
 
@@ -337,34 +333,37 @@ class FragmentFirst constructor(
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
-    val item = FilesInfo.AudioInfo(
-      pathUri,
-      displayName,
-      mimeType,
-      title,
-      relativePath,
-      size,
-      dateAdded,
-      dateModified,
-      duration
-    )
+    val item = FilesInfo.AudioInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,duration)
 
     resultList.add(item)
   }
 
-  private fun getOtherInfo(
-    it: Cursor,
-    idColumn: Int,
-    displayNameColumn: Int,
-    mimeTypeColumn: Int,
-    titleColumn: Int,
-    relativePathColumn: Int,
-    sizeColumn: Int,
-    dateAddedColumn: Int,
-    dateModifiedColumn: Int,
-    uri: Uri,
-    resultList: ArrayList<FilesInfo.OtherInfo>
-  ) {
+  private fun getAudioInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,dataColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,durationColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.AudioInfo>) {
+    val id = it.getLong(idColumn)
+    val displayName = it.getString(displayNameColumn)
+    val dateAdded = it.getLong(dateAddedColumn)*1000
+    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
+    val title = it.getString(titleColumn)
+    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
+    val size = it.getLong(sizeColumn)
+    val dateModified = it.getLong(dateModifiedColumn)*1000
+    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
+    val duration = it.getLong(durationColumn)
+
+
+
+    /**
+     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
+     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
+     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     */
+    val pathUri = ContentUris.withAppendedId(uri, id)
+    val item = FilesInfo.AudioInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,duration)
+
+    resultList.add(item)
+  }
+
+  private fun getOtherInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,relativePathColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.OtherInfo>) {
     val id = it.getLong(idColumn)
 
     val displayName = it.getString(displayNameColumn)
@@ -372,8 +371,8 @@ class FragmentFirst constructor(
     val title = it.getString(titleColumn)
     val relativePath = it.getString(relativePathColumn)
     val size = it.getLong(sizeColumn)
-    val dateAdded = it.getLong(dateAddedColumn)
-    val dateModified = it.getLong(dateModifiedColumn)
+    val dateAdded = it.getLong(dateAddedColumn)*1000
+    val dateModified = it.getLong(dateModifiedColumn)*1000
 
 
     /**
@@ -383,33 +382,12 @@ class FragmentFirst constructor(
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
-    val item = FilesInfo.OtherInfo(
-      pathUri,
-      displayName,
-      mimeType,
-      title,
-      relativePath,
-      size,
-      dateAdded,
-      dateModified,
-    )
+    val item = FilesInfo.OtherInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,)
 
     resultList.add(item)
   }
 
-  fun getDownloadInfoList(
-    resolver: ContentResolver,
-    projection: Array<String>? = null,
-    selection: String? = null,
-    selectionArgs: Array<String>? = null,
-    sortOrder: String? = null
-  ): List<FileInfo> {
-    val resultList = ArrayList<FileInfo>()
-
-    val imageResultList = ArrayList<FilesInfo.ImageInfo>()
-    val videoResultList = ArrayList<FilesInfo.VideoInfo>()
-    val audioResultList = ArrayList<FilesInfo.AudioInfo>()
-    val otherResultList = ArrayList<FilesInfo.OtherInfo>()
+  fun getDownloadInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FileInfo> {
 
     val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       MediaStore.Downloads.EXTERNAL_CONTENT_URI
@@ -417,16 +395,16 @@ class FragmentFirst constructor(
       return emptyList()
     }
 
-    val resultCursor = resolver.query(
-      uri,
-      projection,
-      selection,
-      selectionArgs,
-      sortOrder
-    )
+    val resultList = ArrayList<FileInfo>()
+
+    val imageResultList = ArrayList<FilesInfo.ImageInfo>()
+    val videoResultList = ArrayList<FilesInfo.VideoInfo>()
+    val audioResultList = ArrayList<FilesInfo.AudioInfo>()
+    val otherResultList = ArrayList<FilesInfo.OtherInfo>()
+
+    val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
+
     resultCursor?.use {
-
-
       val imageIdColumn by lazy{ it.getColumnIndexOrThrow(MediaStore.Images.Media._ID)}
       val imageDisplayNameColumn by lazy{ it.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)}
       val imageDateAddedColumn by lazy{ it.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)}
@@ -477,7 +455,6 @@ class FragmentFirst constructor(
       while (it.moveToNext()) {
         val mimeType = it.getStringOrNull(otherMimeTypeColumn) ?: continue
 
-
         if (mimeType.contains("image")) {
           getImageInfo(it,imageIdColumn,imageDisplayNameColumn,imageDateAddedColumn,imageMimeTypeColumn,imageTitleColumn,imageDescriptionColumn,imageSizeColumn,imageDateModifiedColumn,imageDateTakenColumn,imageRelativePathColumn,imageWidthColumn,imageHeightColumn,MediaStore.Images.Media.EXTERNAL_CONTENT_URI,resolver,imageResultList)
         } else if (mimeType.contains("video")) {
@@ -504,9 +481,7 @@ class FragmentFirst constructor(
     return resultList
   }
 
-  sealed class FilesInfo(
-
-  ) {
+  sealed class FilesInfo {
     data class ImageInfo(
       val uri: Uri,
       val displayName: String,
