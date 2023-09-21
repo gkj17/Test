@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.provider.MediaStore.Images.ImageColumns.LATITUDE
 import android.provider.MediaStore.Images.ImageColumns.LONGITUDE
@@ -13,6 +14,7 @@ import android.telephony.mbms.FileInfo
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.core.database.getStringOrNull
 import androidx.databinding.DataBindingUtil
 import androidx.exifinterface.media.ExifInterface
@@ -190,8 +192,10 @@ class FragmentFirst constructor(
         }
       }else{
         val dataColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
+        val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
         while (it.moveToNext()) {
-          getImageInfoLessThanQ(it,idColumn,displayNameColumn,dateAddedColumn,mimeTypeColumn,titleColumn,descriptionColumn,sizeColumn,dateModifiedColumn,dateTakenColumn,dataColumn,widthColumn,heightColumn,uri,resolver,resultList)
+          getImageInfoLessThanQ(it,idColumn,displayNameColumn,dateAddedColumn,mimeTypeColumn,titleColumn,descriptionColumn,sizeColumn,dateModifiedColumn,dateTakenColumn,dataColumn,widthColumn,heightColumn,uri,latitudeColumn,longitudeColumn,resultList)
         }
       }
 
@@ -200,24 +204,8 @@ class FragmentFirst constructor(
     return resultList
   }
 
-  private fun getImageInfo(
-    it: Cursor,
-    idColumn: Int,
-    displayNameColumn: Int,
-    dateAddedColumn: Int,
-    mimeTypeColumn: Int,
-    titleColumn: Int,
-    descriptionColumn: Int,
-    sizeColumn: Int,
-    dateModifiedColumn: Int,
-    dateTakenColumn: Int,
-    relativePathColumn: Int,
-    widthColumn: Int,
-    heightColumn: Int,
-    uri: Uri,
-    resolver: ContentResolver,
-    resultList: MutableList<FilesInfo.ImageInfo>
-  ) {
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun getImageInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,relativePathColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,resolver: ContentResolver,resultList: MutableList<FilesInfo.ImageInfo>) {
     val id = it.getLong(idColumn)
     val displayName = it.getString(displayNameColumn)
     val dateAdded = it.getLong(dateAddedColumn)*1000
@@ -233,7 +221,6 @@ class FragmentFirst constructor(
     var latitude = 0.0
     var longitude = 0.0
 
-
     /**
      * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
      * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
@@ -241,74 +228,32 @@ class FragmentFirst constructor(
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val tmpUri = MediaStore.setRequireOriginal(pathUri)
-      resolver.openInputStream(tmpUri)?.use { stream ->
-        ExifInterface(stream).latLong?.run {
-          latitude = this[0]
-          longitude = this[1]
-        }
+    val tmpUri = MediaStore.setRequireOriginal(pathUri)
+    resolver.openInputStream(tmpUri)?.use { stream ->
+      ExifInterface(stream).latLong?.run {
+        latitude = this[0]
+        longitude = this[1]
       }
-    } else {
-      val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
-      val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
-      latitude = it.getDouble(latitudeColumn)
-      longitude = it.getDouble(longitudeColumn)
     }
-
-
-    resultList.add(
-      FilesInfo.ImageInfo(
-        pathUri,
-        displayName,
-        dateAdded,
-        mimeType,
-        title,
-        description,
-        relativePath,
-        size,
-        dateModified,
-        dateTaken,
-        width,
-        height,
-        latitude,
-        longitude
-      )
-    )
+    resultList.add(FilesInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
   }
 
-  private fun getImageInfoLessThanQ(
-    it: Cursor,
-    idColumn: Int,
-    displayNameColumn: Int,
-    dateAddedColumn: Int,
-    mimeTypeColumn: Int,
-    titleColumn: Int,
-    descriptionColumn: Int,
-    sizeColumn: Int,
-    dateModifiedColumn: Int,
-    dateTakenColumn: Int,
-    dataColumn: Int,
-    widthColumn: Int,
-    heightColumn: Int,
-    uri: Uri,
-    resolver: ContentResolver,
-    resultList: MutableList<FilesInfo.ImageInfo>
-  ) {
+  private fun getImageInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,dataColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,latitudeColumn:Int,longitudeColumn:Int,resultList: MutableList<FilesInfo.ImageInfo>) {
     val id = it.getLong(idColumn)
     val displayName = it.getString(displayNameColumn)
     val dateAdded = it.getLong(dateAddedColumn)*1000
     val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
     val title = it.getString(titleColumn)
+    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
     val description = it.getStringOrNull(descriptionColumn) ?: ""
     val size = it.getLong(sizeColumn)
     val dateModified = it.getLong(dateModifiedColumn)*1000
     val dateTaken = it.getLong(dateTakenColumn)
-    val path = it.getString(dataColumn)
+    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
     val width = it.getInt(widthColumn)
     val height = it.getInt(heightColumn)
-    var latitude = 0.0
-    var longitude = 0.0
+    val latitude = it.getDouble(latitudeColumn)
+    val longitude = it.getDouble(longitudeColumn)
 
 
     /**
@@ -317,41 +262,8 @@ class FragmentFirst constructor(
      * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
+    resultList.add(FilesInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val tmpUri = MediaStore.setRequireOriginal(pathUri)
-      resolver.openInputStream(tmpUri)?.use { stream ->
-        ExifInterface(stream).latLong?.run {
-          latitude = this[0]
-          longitude = this[1]
-        }
-      }
-    } else {
-      val latitudeColumn = it.getColumnIndexOrThrow(LATITUDE)
-      val longitudeColumn = it.getColumnIndexOrThrow(LONGITUDE)
-      latitude = it.getDouble(latitudeColumn)
-      longitude = it.getDouble(longitudeColumn)
-    }
-
-
-    resultList.add(
-      FilesInfo.ImageInfo(
-        pathUri,
-        displayName,
-        dateAdded,
-        mimeType,
-        title,
-        description,
-        path,
-        size,
-        dateModified,
-        dateTaken,
-        width,
-        height,
-        latitude,
-        longitude
-      )
-    )
   }
 
   fun getAudioInfoList(
