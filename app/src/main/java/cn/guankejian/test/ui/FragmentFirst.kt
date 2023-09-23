@@ -2,15 +2,13 @@ package cn.guankejian.test.ui
 
 import android.content.ContentResolver
 import android.content.ContentUris
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.MediaStore.Images.ImageColumns.LATITUDE
-import android.provider.MediaStore.Images.ImageColumns.LONGITUDE
-import android.telephony.mbms.FileInfo
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,11 +40,11 @@ class FragmentFirst constructor(
       container,
       false
     )
-    val imageList: MutableList<FilesInfo.ImageInfo> = getImageInfoList(requireContext().contentResolver).toMutableList()
-    val videoList: MutableList<FilesInfo.VideoInfo> = getVideoInfoList(requireContext().contentResolver).toMutableList()
-    val audioList: MutableList<FilesInfo.AudioInfo> = getAudioInfoList(requireContext().contentResolver).toMutableList()
+    val imageList: MutableList<FilesInfo.ImageInfo> = getImageInfoList(requireContext()).toMutableList()
+    val videoList: MutableList<FilesInfo.VideoInfo> = getVideoInfoList(requireContext()).toMutableList()
+    val audioList: MutableList<FilesInfo.AudioInfo> = getAudioInfoList(requireContext()).toMutableList()
     val otherList: MutableList<FilesInfo.OtherInfo> = ArrayList()
-    getDownloadInfoList(requireContext().contentResolver).map {
+    getDownloadInfoList(requireContext()).map {
       when(it.type){
         is ResourceType.ResourceImage-> imageList.add(it.item as FilesInfo.ImageInfo)
         is ResourceType.ResourceVideo-> videoList.add(it.item as FilesInfo.VideoInfo)
@@ -61,7 +59,8 @@ class FragmentFirst constructor(
   }
 
 
-  fun getVideoInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.VideoInfo> {
+  fun getVideoInfoList(context: Context ,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.VideoInfo> {
+    val resolver = context.contentResolver
     val resultList = ArrayList<FilesInfo.VideoInfo>()
     val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
@@ -100,35 +99,35 @@ class FragmentFirst constructor(
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
-  private fun getVideoInfo(it: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, relativePathColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>) {
-    val id = it.getLong(idColumn)
-    val displayName = it.getString(displayNameColumn)
-    val title = it.getString(titleColumn)
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val description = it.getStringOrNull(descriptionColumn) ?: ""
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val relativePath = it.getString(relativePathColumn)
-    val size = it.getLong(sizeColumn)
-    val duration = it.getLong(durationColumn)
-    val height = it.getInt(heightColumn)
-    val width = it.getInt(widthColumn)
+  private fun getVideoInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, relativePathColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>, needLocation:Boolean=false) {
+    val id = cursor.getLong(idColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val title = cursor.getString(titleColumn)
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val description = cursor.getStringOrNull(descriptionColumn) ?: ""
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val relativePath = cursor.getString(relativePathColumn)
+    val size = cursor.getLong(sizeColumn)
+    val duration = cursor.getLong(durationColumn)
+    val height = cursor.getInt(heightColumn)
+    val width = cursor.getInt(widthColumn)
     var latitude = 0.0
     var longitude = 0.0
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
 
-    val tmpUri = MediaStore.setRequireOriginal(pathUri)
-    resolver.openInputStream(tmpUri)?.use { stream ->
-      ExifInterface(stream).latLong?.run {
-        latitude = this[0]
-        longitude = this[1]
+    if(needLocation){
+      val tmpUri = MediaStore.setRequireOriginal(pathUri)
+      resolver.openInputStream(tmpUri)?.use { stream ->
+        ExifInterface(stream).latLong?.run {
+          latitude = this[0]
+          longitude = this[1]
+        }
       }
     }
 
@@ -139,29 +138,27 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getVideoInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,titleColumn: Int,mimeTypeColumn: Int,descriptionColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,dataColumn: Int,sizeColumn: Int,durationColumn: Int,heightColumn: Int,widthColumn: Int ,uri: Uri,resolver: ContentResolver,resultList: ArrayList<FilesInfo.VideoInfo>) {
-    val id = it.getLong(idColumn)
-    val displayName = it.getString(displayNameColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
+  private fun getVideoInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, dataColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>) {
+    val id = cursor.getLong(idColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
     val realDisplayName = title+displayName.substring(displayName.indexOf("."))
-    val size = it.getLong(sizeColumn)
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
-    val duration = it.getLong(durationColumn)
+    val size = cursor.getLong(sizeColumn)
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
+    val duration = cursor.getLong(durationColumn)
 
-    val description = it.getStringOrNull(descriptionColumn) ?: ""
-    val width = it.getInt(widthColumn)
-    val height = it.getInt(heightColumn)
+    val description = cursor.getStringOrNull(descriptionColumn) ?: ""
+    val width = cursor.getInt(widthColumn)
+    val height = cursor.getInt(heightColumn)
     var latitude = 0.0
     var longitude = 0.0
 
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Images.Video.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
     resolver.openInputStream(pathUri)?.use { stream ->
@@ -175,7 +172,8 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  fun getImageInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.ImageInfo> {
+  fun getImageInfoList(context: Context,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.ImageInfo> {
+    val resolver = context.contentResolver
     val resultList = ArrayList<FilesInfo.ImageInfo>()
     val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
@@ -212,61 +210,58 @@ class FragmentFirst constructor(
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
-  private fun getImageInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,relativePathColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,resolver: ContentResolver,resultList: MutableList<FilesInfo.ImageInfo>) {
-    val id = it.getLong(idColumn)
-    val displayName = it.getString(displayNameColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
-    val description = it.getStringOrNull(descriptionColumn) ?: ""
-    val size = it.getLong(sizeColumn)
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val dateTaken = it.getLong(dateTakenColumn)
-    val relativePath = it.getString(relativePathColumn)
-    val width = it.getInt(widthColumn)
-    val height = it.getInt(heightColumn)
+  private fun getImageInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, dateAddedColumn: Int, mimeTypeColumn: Int, titleColumn: Int, descriptionColumn: Int, sizeColumn: Int, dateModifiedColumn: Int, dateTakenColumn: Int, relativePathColumn: Int, widthColumn: Int, heightColumn: Int, uri: Uri, resolver: ContentResolver, resultList: MutableList<FilesInfo.ImageInfo>, needLocation:Boolean=false) {
+    val id = cursor.getLong(idColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
+    val description = cursor.getStringOrNull(descriptionColumn) ?: ""
+    val size = cursor.getLong(sizeColumn)
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val dateTaken = cursor.getLong(dateTakenColumn)
+    val relativePath = cursor.getString(relativePathColumn)
+    val width = cursor.getInt(widthColumn)
+    val height = cursor.getInt(heightColumn)
     var latitude = 0.0
     var longitude = 0.0
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
-
-    val tmpUri = MediaStore.setRequireOriginal(pathUri)
-    resolver.openInputStream(tmpUri)?.use { stream ->
-      ExifInterface(stream).latLong?.run {
-        latitude = this[0]
-        longitude = this[1]
+    if(needLocation) {
+      val tmpUri = MediaStore.setRequireOriginal(pathUri)
+      resolver.openInputStream(tmpUri)?.use { stream ->
+        ExifInterface(stream).latLong?.run {
+          latitude = this[0]
+          longitude = this[1]
+        }
       }
     }
     resultList.add(FilesInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
   }
 
-  private fun getImageInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,dateAddedColumn: Int,mimeTypeColumn: Int,titleColumn: Int,descriptionColumn: Int,sizeColumn: Int,dateModifiedColumn: Int,dateTakenColumn: Int,dataColumn: Int,widthColumn: Int,heightColumn: Int,uri: Uri,resolver: ContentResolver,resultList: MutableList<FilesInfo.ImageInfo>) {
-    val id = it.getLong(idColumn)
-    val displayName = it.getString(displayNameColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
+  private fun getImageInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, dateAddedColumn: Int, mimeTypeColumn: Int, titleColumn: Int, descriptionColumn: Int, sizeColumn: Int, dateModifiedColumn: Int, dateTakenColumn: Int, dataColumn: Int, widthColumn: Int, heightColumn: Int, uri: Uri, resolver: ContentResolver, resultList: MutableList<FilesInfo.ImageInfo>) {
+    val id = cursor.getLong(idColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
     val realDisplayName = title+displayName.substring(displayName.indexOf("."))
-    val description = it.getStringOrNull(descriptionColumn) ?: ""
-    val size = it.getLong(sizeColumn)
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val dateTaken = it.getLong(dateTakenColumn)
-    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
-    val width = it.getInt(widthColumn)
-    val height = it.getInt(heightColumn)
+    val description = cursor.getStringOrNull(descriptionColumn) ?: ""
+    val size = cursor.getLong(sizeColumn)
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val dateTaken = cursor.getLong(dateTakenColumn)
+    val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
+    val width = cursor.getInt(widthColumn)
+    val height = cursor.getInt(heightColumn)
     var latitude = 0.0
     var longitude = 0.0
 
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
     resolver.openInputStream(pathUri)?.use { stream ->
@@ -279,7 +274,8 @@ class FragmentFirst constructor(
 
   }
 
-  fun getAudioInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.AudioInfo> {
+  fun getAudioInfoList(context: Context,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.AudioInfo> {
+    val resolver = context.contentResolver
     val resultList = ArrayList<FilesInfo.AudioInfo>()
     val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
@@ -313,23 +309,21 @@ class FragmentFirst constructor(
     return resultList
   }
 
-  private fun getAudioInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,relativePathColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,durationColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.AudioInfo>) {
-    val id = it.getLong(idColumn)
+  private fun getAudioInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.AudioInfo>) {
+    val id = cursor.getLong(idColumn)
 
-    val displayName = it.getString(displayNameColumn)
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
-    val relativePath = it.getString(relativePathColumn)
-    val size = it.getLong(sizeColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val duration = it.getLong(durationColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
+    val relativePath = cursor.getString(relativePathColumn)
+    val size = cursor.getLong(sizeColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val duration = cursor.getLong(durationColumn)
 
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
 
@@ -338,24 +332,22 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getAudioInfoLessThanQ(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,dataColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,durationColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.AudioInfo>) {
-    val id = it.getLong(idColumn)
-    val displayName = it.getString(displayNameColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
+  private fun getAudioInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, dataColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.AudioInfo>) {
+    val id = cursor.getLong(idColumn)
+    val displayName = cursor.getString(displayNameColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
     val realDisplayName = title+displayName.substring(displayName.indexOf("."))
-    val size = it.getLong(sizeColumn)
-    val dateModified = it.getLong(dateModifiedColumn)*1000
-    val relativePath = it.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
-    val duration = it.getLong(durationColumn)
+    val size = cursor.getLong(sizeColumn)
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
+    val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
+    val duration = cursor.getLong(durationColumn)
 
 
 
     /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
+     * 也可以用 Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
      */
     val pathUri = ContentUris.withAppendedId(uri, id)
     val item = FilesInfo.AudioInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,duration)
@@ -363,23 +355,19 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getOtherInfo(it: Cursor,idColumn: Int,displayNameColumn: Int,mimeTypeColumn: Int,titleColumn: Int,relativePathColumn: Int,sizeColumn: Int,dateAddedColumn: Int,dateModifiedColumn: Int,uri: Uri,resultList: ArrayList<FilesInfo.OtherInfo>) {
-    val id = it.getLong(idColumn)
+  private fun getOtherInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.OtherInfo>) {
+    val id = cursor.getLong(idColumn)
 
-    val displayName = it.getString(displayNameColumn)
-    val mimeType = it.getStringOrNull(mimeTypeColumn) ?: return
-    val title = it.getString(titleColumn)
-    val relativePath = it.getString(relativePathColumn)
-    val size = it.getLong(sizeColumn)
-    val dateAdded = it.getLong(dateAddedColumn)*1000
-    val dateModified = it.getLong(dateModifiedColumn)*1000
+    val displayName = cursor.getString(displayNameColumn)
+    val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
+    val title = cursor.getString(titleColumn)
+    val relativePath = cursor.getString(relativePathColumn)
+    val size = cursor.getLong(sizeColumn)
+    val dateAdded = cursor.getLong(dateAddedColumn)*1000
+    val dateModified = cursor.getLong(dateModifiedColumn)*1000
 
 
-    /**
-     * ContentUris.withAppendedId() 方法是专门用于将 ID 附加到特定类型的 URI（例如 Content:// URI）上的便捷方法。
-     * 如果你正在处理其他类型的 URI，例如 file:// URI 或自定义 URI，
-     * 那么你可能需要使用 uri.buildUpon().appendPath("$fileId").build() 的方式来构建 URI。
-     */
+
     val pathUri = ContentUris.withAppendedId(uri, id)
 
     val item = FilesInfo.OtherInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,)
@@ -387,7 +375,8 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  fun getDownloadInfoList(resolver: ContentResolver,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FileInfo> {
+  fun getDownloadInfoList(context: Context ,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FileInfo> {
+    val resolver = context.contentResolver
 
     val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       MediaStore.Downloads.EXTERNAL_CONTENT_URI
