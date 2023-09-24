@@ -19,7 +19,11 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.paging.ExperimentalPagingApi
 import cn.guankejian.test.R
+import cn.guankejian.test.StorageUtil
 import cn.guankejian.test.databinding.FragmentFirstBinding
+import cn.guankejian.test.logE
+import java.io.File
+import java.util.LinkedList
 
 
 @ExperimentalPagingApi
@@ -40,10 +44,71 @@ class FragmentFirst constructor(
       container,
       false
     )
+
+
+
+    val a = StorageUtil.readPublicStorage(requireContext())
+    a
+    return binding.root
+  }
+
+  sealed class FileItem {
+    abstract val name:String
+    val parentPath  by lazy {
+      path.substring(0,path.lastIndexOf("/"))
+    }
+    abstract val path:String
+    abstract val lastModified:Long
+    data class File(
+      override val name: String,
+      override val path: String,
+      override val lastModified: Long,
+      val size:Long
+    ): FileItem()
+
+    data class  Folder(
+      override val name: String,
+      override val path: String,
+      override val lastModified: Long
+    ): FileItem()
+  }
+  fun testReadFile(): Map<String, List<FileItem>> {
+    return testReadAllFile().groupBy {
+      it.parentPath
+    }
+  }
+  fun testReadAllFile(directory: File = Environment.getExternalStorageDirectory(), showHidden:Boolean = false):List<FileItem>{
+    val listFile = directory.listFiles()?: return emptyList()
+    val ret = LinkedList<FileItem>()
+    for (item in listFile) {
+      if (item.isDirectory) {
+        if(item.isHidden) continue
+        val name = item.name
+        val lastModified = item.lastModified()
+        val path = item.absolutePath
+        ret.add(FileItem.Folder(name, path, lastModified).also{
+          println(it)
+        })
+        ret.addAll(testReadAllFile(item,showHidden))
+      } else {
+        if(item.isHidden) continue
+        val name = item.name
+        val lastModified = item.lastModified()
+        val path = item.absolutePath
+        val size = item.length()
+        ret.add(FileItem.File(name, path, lastModified, size).also{
+          println(it)
+        })
+      }
+    }
+    return ret
+  }
+
+  fun testPublicStorage(){
     val imageList: MutableList<FilesInfo.ImageInfo> = getImageInfoList(requireContext()).toMutableList()
     val videoList: MutableList<FilesInfo.VideoInfo> = getVideoInfoList(requireContext()).toMutableList()
     val audioList: MutableList<FilesInfo.AudioInfo> = getAudioInfoList(requireContext()).toMutableList()
-    val otherList: MutableList<FilesInfo.OtherInfo> = ArrayList()
+    val otherList: MutableList<FilesInfo.OtherInfo> = LinkedList()
     getDownloadInfoList(requireContext()).map {
       when(it.type){
         is ResourceType.ResourceImage-> imageList.add(it.item as FilesInfo.ImageInfo)
@@ -53,15 +118,52 @@ class FragmentFirst constructor(
       }
     }
 
-//    downloadList
-    "123"
-    return binding.root
+    val fileFolders:LinkedList<FileFolder> = LinkedList<FileFolder>().apply {
+      add(FileFolder("所有图片",imageList))
+      add(FileFolder("所有视频",videoList))
+      add(FileFolder("所有音频",audioList))
+    }
+
+
+    var t = System.currentTimeMillis()
+    val a =imageList.plus(videoList).plus(audioList).groupBy {info->
+      println(info.title)
+      info.parentPath
+        .replace("/pictures","/Pictures")
+        .replace("/dcim","/DCIM")
+        .replace("/camera","/Camera")
+        .replace("/screenshots","/Screenshots")
+    }
+    println("groupBy耗时 -> ${System.currentTimeMillis()-t}")
+//    val map:HashMap<String,LinkedList<FilesInfo>> = HashMap()
+//    t = System.currentTimeMillis()
+//    for (item in imageList.plus(videoList).plus(audioList)) {
+//      val key = item.parentPath
+//        .replace("/pictures","/Pictures")
+//        .replace("/dcim","/DCIM")
+//        .replace("/camera","/Camera")
+//        .replace("/screenshots","/Screenshots")
+//      if(map.containsKey(key)){
+//        val list = map[key]!!
+//        list.add(item)
+//        map[key] = list
+//      }else{
+//        map[key] = LinkedList()
+//      }
+//    }
+//    println("map耗时 -> ${System.currentTimeMillis()-t}")
+//    println(map.size)
+    println("123")
   }
 
+  data class FileFolder(
+    val name:String,
+    val medias:List<FilesInfo>
+  )
 
   fun getVideoInfoList(context: Context ,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.VideoInfo> {
     val resolver = context.contentResolver
-    val resultList = ArrayList<FilesInfo.VideoInfo>()
+    val resultList = LinkedList<FilesInfo.VideoInfo>()
     val uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
     resultCursor?.use {
@@ -99,7 +201,7 @@ class FragmentFirst constructor(
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
-  private fun getVideoInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, relativePathColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>, needLocation:Boolean=false) {
+  private fun getVideoInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, relativePathColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: LinkedList<FilesInfo.VideoInfo>, needLocation:Boolean=false) {
     val id = cursor.getLong(idColumn)
     val displayName = cursor.getString(displayNameColumn)
     val title = cursor.getString(titleColumn)
@@ -109,6 +211,8 @@ class FragmentFirst constructor(
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val relativePath = cursor.getString(relativePathColumn)
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val duration = cursor.getLong(durationColumn)
     val height = cursor.getInt(heightColumn)
     val width = cursor.getInt(widthColumn)
@@ -138,14 +242,16 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getVideoInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, dataColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: ArrayList<FilesInfo.VideoInfo>) {
+  private fun getVideoInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, titleColumn: Int, mimeTypeColumn: Int, descriptionColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, dataColumn: Int, sizeColumn: Int, durationColumn: Int, heightColumn: Int, widthColumn: Int, uri: Uri, resolver: ContentResolver, resultList: LinkedList<FilesInfo.VideoInfo>) {
     val id = cursor.getLong(idColumn)
     val displayName = cursor.getString(displayNameColumn)
     val dateAdded = cursor.getLong(dateAddedColumn)*1000
     val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
     val title = cursor.getString(titleColumn)
-    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
+    val realDisplayName = title+displayName.substring(displayName.lastIndexOf("."))
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
     val duration = cursor.getLong(durationColumn)
@@ -174,7 +280,7 @@ class FragmentFirst constructor(
 
   fun getImageInfoList(context: Context,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.ImageInfo> {
     val resolver = context.contentResolver
-    val resultList = ArrayList<FilesInfo.ImageInfo>()
+    val resultList = LinkedList<FilesInfo.ImageInfo>()
     val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
     val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
@@ -218,6 +324,8 @@ class FragmentFirst constructor(
     val title = cursor.getString(titleColumn)
     val description = cursor.getStringOrNull(descriptionColumn) ?: ""
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val dateTaken = cursor.getLong(dateTakenColumn)
     val relativePath = cursor.getString(relativePathColumn)
@@ -248,9 +356,11 @@ class FragmentFirst constructor(
     val dateAdded = cursor.getLong(dateAddedColumn)*1000
     val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
     val title = cursor.getString(titleColumn)
-    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
+    val realDisplayName = title+displayName.substring(displayName.lastIndexOf("."))
     val description = cursor.getStringOrNull(descriptionColumn) ?: ""
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val dateTaken = cursor.getLong(dateTakenColumn)
     val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
@@ -276,7 +386,7 @@ class FragmentFirst constructor(
 
   fun getAudioInfoList(context: Context,projection: Array<String>? = null,selection: String? = null,selectionArgs: Array<String>? = null,sortOrder: String? = null): List<FilesInfo.AudioInfo> {
     val resolver = context.contentResolver
-    val resultList = ArrayList<FilesInfo.AudioInfo>()
+    val resultList = LinkedList<FilesInfo.AudioInfo>()
     val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
     val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
@@ -309,7 +419,7 @@ class FragmentFirst constructor(
     return resultList
   }
 
-  private fun getAudioInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.AudioInfo>) {
+  private fun getAudioInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: LinkedList<FilesInfo.AudioInfo>) {
     val id = cursor.getLong(idColumn)
 
     val displayName = cursor.getString(displayNameColumn)
@@ -317,6 +427,8 @@ class FragmentFirst constructor(
     val title = cursor.getString(titleColumn)
     val relativePath = cursor.getString(relativePathColumn)
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateAdded = cursor.getLong(dateAddedColumn)*1000
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val duration = cursor.getLong(durationColumn)
@@ -332,14 +444,16 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getAudioInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, dataColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.AudioInfo>) {
+  private fun getAudioInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, dataColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, durationColumn: Int, uri: Uri, resultList: LinkedList<FilesInfo.AudioInfo>) {
     val id = cursor.getLong(idColumn)
     val displayName = cursor.getString(displayNameColumn)
     val dateAdded = cursor.getLong(dateAddedColumn)*1000
     val mimeType = cursor.getStringOrNull(mimeTypeColumn) ?: return
     val title = cursor.getString(titleColumn)
-    val realDisplayName = title+displayName.substring(displayName.indexOf("."))
+    val realDisplayName = title+displayName.substring(displayName.lastIndexOf("."))
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
     val relativePath = cursor.getString(dataColumn).replace(Environment.getExternalStorageDirectory().absolutePath+"/","").replace(realDisplayName,"")
     val duration = cursor.getLong(durationColumn)
@@ -355,7 +469,7 @@ class FragmentFirst constructor(
     resultList.add(item)
   }
 
-  private fun getOtherInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, uri: Uri, resultList: ArrayList<FilesInfo.OtherInfo>) {
+  private fun getOtherInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, mimeTypeColumn: Int, titleColumn: Int, relativePathColumn: Int, sizeColumn: Int, dateAddedColumn: Int, dateModifiedColumn: Int, uri: Uri, resultList: LinkedList<FilesInfo.OtherInfo>) {
     val id = cursor.getLong(idColumn)
 
     val displayName = cursor.getString(displayNameColumn)
@@ -363,6 +477,8 @@ class FragmentFirst constructor(
     val title = cursor.getString(titleColumn)
     val relativePath = cursor.getString(relativePathColumn)
     val size = cursor.getLong(sizeColumn)
+    if(size == 0L)
+      return
     val dateAdded = cursor.getLong(dateAddedColumn)*1000
     val dateModified = cursor.getLong(dateModifiedColumn)*1000
 
@@ -384,12 +500,12 @@ class FragmentFirst constructor(
       return emptyList()
     }
 
-    val resultList = ArrayList<FileInfo>()
+    val resultList = LinkedList<FileInfo>()
 
-    val imageResultList = ArrayList<FilesInfo.ImageInfo>()
-    val videoResultList = ArrayList<FilesInfo.VideoInfo>()
-    val audioResultList = ArrayList<FilesInfo.AudioInfo>()
-    val otherResultList = ArrayList<FilesInfo.OtherInfo>()
+    val imageResultList = LinkedList<FilesInfo.ImageInfo>()
+    val videoResultList = LinkedList<FilesInfo.VideoInfo>()
+    val audioResultList = LinkedList<FilesInfo.AudioInfo>()
+    val otherResultList = LinkedList<FilesInfo.OtherInfo>()
 
     val resultCursor = resolver.query(uri,projection,selection,selectionArgs,sortOrder)
 
@@ -471,16 +587,35 @@ class FragmentFirst constructor(
   }
 
   sealed class FilesInfo {
+    abstract val title: String
+    abstract val displayName: String
+    abstract val relativePath: String
+    abstract val uri: Uri
+    abstract val mimeType: String
+    abstract val size: Long
+    abstract val dateAdded: Long
+    abstract val dateModified: Long
+
+    val path  by lazy {"${Environment.getExternalStorageDirectory()}/${relativePath}${title}${displayName.let{it.substring(it.lastIndexOf("."))}}"}
+
+    val parentPath  by lazy {
+      path.substring(0,path.lastIndexOf("/"))
+    }
+
+    val parentName by lazy{
+      parentPath.substring(parentPath.lastIndexOf("/"))
+    }
+
     data class ImageInfo(
-      val uri: Uri,
-      val displayName: String,
-      val dateAdded: Long,
-      val mimeType: String,
-      val title: String,
+      override val uri: Uri,
+      override val displayName: String,
+      override val dateAdded: Long,
+      override val mimeType: String,
+      override val title: String,
       val description: String,
-      val relativePath: String,
-      val size: Long,
-      val dateModified: Long,
+      override val relativePath: String,
+      override val size: Long,
+      override val dateModified: Long,
       val dateTaken: Long,
       val width: Int,
       val height: Int,
@@ -489,15 +624,15 @@ class FragmentFirst constructor(
     ) : FilesInfo()
 
     data class VideoInfo(
-      val uri: Uri,
-      val displayName: String,
-      val title: String,
-      val mimeType: String,
+      override val uri: Uri,
+      override val displayName: String,
+      override val title: String,
+      override val mimeType: String,
       val description: String,
-      val relativePath: String,
-      val dateAdded: Long,
-      val dateModified: Long,
-      val size: Long,
+      override val relativePath: String,
+      override val dateAdded: Long,
+      override val dateModified: Long,
+      override val size: Long,
       val duration: Long,
       val height: Int,
       val width: Int,
@@ -506,26 +641,26 @@ class FragmentFirst constructor(
     ) : FilesInfo()
 
     data class AudioInfo(
-      val uri: Uri,
-      val displayName: String,
-      val mimeType: String,
-      val title: String,
-      val relativePath: String,
-      val size: Long,
-      val dateAdded: Long,
-      val dateModified: Long,
+      override val uri: Uri,
+      override val displayName: String,
+      override val mimeType: String,
+      override val title: String,
+      override val relativePath: String,
+      override val size: Long,
+      override val dateAdded: Long,
+      override val dateModified: Long,
       val duration: Long,
     ) : FilesInfo()
 
     data class OtherInfo(
-      val uri: Uri,
-      val displayName: String,
-      val mimeType: String,
-      val title: String,
-      val relativePath: String,
-      val size: Long,
-      val dateAdded: Long,
-      val dateModified: Long,
+      override val uri: Uri,
+      override val displayName: String,
+      override val mimeType: String,
+      override val title: String,
+      override val relativePath: String,
+      override val size: Long,
+      override val dateAdded: Long,
+      override val dateModified: Long,
     ) : FilesInfo()
   }
 
