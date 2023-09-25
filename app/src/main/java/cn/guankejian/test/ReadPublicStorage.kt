@@ -1,4 +1,4 @@
-package cn.guankejian.lib_common.util.storage
+package cn.guankejian.test
 
 import android.content.ContentResolver
 import android.content.ContentUris
@@ -11,8 +11,6 @@ import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.core.database.getStringOrNull
 import androidx.exifinterface.media.ExifInterface
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import java.util.LinkedList
 
 /**
@@ -21,17 +19,24 @@ import java.util.LinkedList
  *  Version     :   1.0
  *  Description :
  **/
-fun readPublicStorageInner(context:Context, vararg types:ResourceType = arrayOf(ResourceType.ResourceImage,ResourceType.ResourceVideo,ResourceType.ResourceAudio,ResourceType.ResourceOther)): List<PublicStorageFileInfo> {
+fun readPublicStorageInner(context:Context, vararg types: ResourceType = arrayOf(
+  ResourceType.ResourceImage,
+  ResourceType.ResourceVideo,
+  ResourceType.ResourceAudio,
+  ResourceType.ResourceOther
+)): List<PublicStorageFileInfo> {
   val imageList: MutableList<PublicStorageFileInfo.ImageInfo> = LinkedList()
   val videoList: MutableList<PublicStorageFileInfo.VideoInfo> = LinkedList()
   val audioList: MutableList<PublicStorageFileInfo.AudioInfo> = LinkedList()
   val otherList: MutableList<PublicStorageFileInfo.OtherInfo> = LinkedList()
+
   if(types.contains(ResourceType.ResourceImage))
     imageList.addAll(getImageInfoList(context).toMutableList())
   if(types.contains(ResourceType.ResourceVideo))
     videoList.addAll(getVideoInfoList(context).toMutableList())
   if(types.contains(ResourceType.ResourceAudio))
     audioList.addAll(getAudioInfoList(context).toMutableList())
+
   getDownloadInfoList(context, types=types).map {
     when(it.type){
       is ResourceType.ResourceImage -> imageList.add(it.item as PublicStorageFileInfo.ImageInfo)
@@ -41,10 +46,7 @@ fun readPublicStorageInner(context:Context, vararg types:ResourceType = arrayOf(
     }
   }
 
-
-
    return imageList.plus(videoList).plus(audioList)
-
 }
 
 
@@ -67,8 +69,6 @@ fun getVideoInfoList(context: Context, projection: Array<String>? = null, select
     val durationColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
     val heightColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT)
     val widthColumn = it.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH)
-
-
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       val relativePathColumn = it.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
@@ -109,7 +109,6 @@ private fun getVideoInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, 
    */
   val pathUri = ContentUris.withAppendedId(uri, id)
 
-
   if(needLocation){
     val tmpUri = MediaStore.setRequireOriginal(pathUri)
     resolver.openInputStream(tmpUri)?.use { stream ->
@@ -120,24 +119,7 @@ private fun getVideoInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, 
     }
   }
 
-
-
-  val item = PublicStorageFileInfo.VideoInfo(
-    pathUri,
-    displayName,
-    title,
-    mimeType,
-    description,
-    relativePath,
-    dateAdded,
-    dateModified,
-    size,
-    duration,
-    height,
-    width,
-    latitude,
-    longitude
-  )
+  val item = PublicStorageFileInfo.VideoInfo(pathUri,displayName,title,mimeType,description,relativePath,dateAdded,dateModified,size,duration,height,width,latitude,longitude)
 
   resultList.add(item)
 }
@@ -173,22 +155,7 @@ private fun getVideoInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColu
       longitude = this[1]
     }
   }
-  val item = PublicStorageFileInfo.VideoInfo(
-    pathUri,
-    displayName,
-    title,
-    mimeType,
-    description,
-    relativePath,
-    dateAdded,
-    dateModified,
-    size,
-    duration,
-    height,
-    width,
-    latitude,
-    longitude
-  )
+  val item = PublicStorageFileInfo.VideoInfo(pathUri,displayName,title,mimeType,description,relativePath,dateAdded,dateModified,size,duration,height,width,latitude,longitude)
 
   resultList.add(item)
 }
@@ -262,24 +229,7 @@ private fun getImageInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, 
       }
     }
   }
-  resultList.add(
-    PublicStorageFileInfo.ImageInfo(
-      pathUri,
-      displayName,
-      dateAdded,
-      mimeType,
-      title,
-      description,
-      relativePath,
-      size,
-      dateModified,
-      dateTaken,
-      width,
-      height,
-      latitude,
-      longitude
-    )
-  )
+  resultList.add(PublicStorageFileInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
 }
 
 private fun getImageInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColumn: Int, dateAddedColumn: Int, mimeTypeColumn: Int, titleColumn: Int, descriptionColumn: Int, sizeColumn: Int, dateModifiedColumn: Int, dateTakenColumn: Int, dataColumn: Int, widthColumn: Int, heightColumn: Int, uri: Uri, resolver: ContentResolver, resultList: MutableList<PublicStorageFileInfo.ImageInfo>) {
@@ -312,24 +262,7 @@ private fun getImageInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColu
       longitude = this[1]
     }
   }
-  resultList.add(
-    PublicStorageFileInfo.ImageInfo(
-      pathUri,
-      displayName,
-      dateAdded,
-      mimeType,
-      title,
-      description,
-      relativePath,
-      size,
-      dateModified,
-      dateTaken,
-      width,
-      height,
-      latitude,
-      longitude
-    )
-  )
+  resultList.add(PublicStorageFileInfo.ImageInfo(pathUri,displayName,dateAdded,mimeType,title,description,relativePath,size,dateModified,dateTaken,width,height,latitude,longitude))
 
 }
 
@@ -388,17 +321,7 @@ private fun getAudioInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, 
    */
   val pathUri = ContentUris.withAppendedId(uri, id)
 
-  val item = PublicStorageFileInfo.AudioInfo(
-    pathUri,
-    displayName,
-    mimeType,
-    title,
-    relativePath,
-    size,
-    dateAdded,
-    dateModified,
-    duration
-  )
+  val item = PublicStorageFileInfo.AudioInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,duration)
 
   resultList.add(item)
 }
@@ -423,17 +346,7 @@ private fun getAudioInfoLessThanQ(cursor: Cursor, idColumn: Int, displayNameColu
    * 也可以用 Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,cursor.getString(idColumnIndex))
    */
   val pathUri = ContentUris.withAppendedId(uri, id)
-  val item = PublicStorageFileInfo.AudioInfo(
-    pathUri,
-    displayName,
-    mimeType,
-    title,
-    relativePath,
-    size,
-    dateAdded,
-    dateModified,
-    duration
-  )
+  val item = PublicStorageFileInfo.AudioInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,duration)
 
   resultList.add(item)
 }
@@ -455,21 +368,12 @@ private fun getOtherInfo(cursor: Cursor, idColumn: Int, displayNameColumn: Int, 
 
   val pathUri = ContentUris.withAppendedId(uri, id)
 
-  val item = PublicStorageFileInfo.OtherInfo(
-    pathUri,
-    displayName,
-    mimeType,
-    title,
-    relativePath,
-    size,
-    dateAdded,
-    dateModified,
-  )
+  val item = PublicStorageFileInfo.OtherInfo(pathUri,displayName,mimeType,title,relativePath,size,dateAdded,dateModified,)
 
   resultList.add(item)
 }
 
-fun getDownloadInfoList(context: Context, projection: Array<String>? = null, selection: String? = null, selectionArgs: Array<String>? = null, sortOrder: String? = null, vararg types:ResourceType): List<FileInfo> {
+fun getDownloadInfoList(context: Context, projection: Array<String>? = null, selection: String? = null, selectionArgs: Array<String>? = null, sortOrder: String? = null, vararg types: ResourceType): List<FileInfo> {
   val resolver = context.contentResolver
 
   val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -547,7 +451,9 @@ fun getDownloadInfoList(context: Context, projection: Array<String>? = null, sel
       } else if (mimeType.contains("audio") && types.contains(ResourceType.ResourceAudio)) {
         getAudioInfo(it,audioIdColumn,audioDisplayNameColumn,audioMimeTypeColumn,audioTitleColumn,audioRelativePathColumn,audioSizeColumn,audioDateAddedColumn,audioDateModifiedColumn,audioDurationColumn,
           MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,audioResultList)
-      } else if (!mimeType.contains("image") && !mimeType.contains("video") && !mimeType.contains("audio") && types.contains(ResourceType.ResourceOther)) {
+      } else if (!mimeType.contains("image") && !mimeType.contains("video") && !mimeType.contains("audio") && types.contains(
+          ResourceType.ResourceOther
+        )) {
         getOtherInfo(it,otherIdColumn,otherDisplayNameColumn,otherMimeTypeColumn,otherTitleColumn,otherRelativePathColumn,otherSizeColumn,otherDateAddedColumn,otherDateModifiedColumn,
           MediaStore.Downloads.EXTERNAL_CONTENT_URI,otherResultList)
       }
