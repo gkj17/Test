@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:id="@+id/coordinator"
+        android:background="@android:color/holo_purple"
+        android:layout_height="match_parent">
+
+        <!--        android:background="@android:color/holo_purple"-->
+
+        <Button
+            android:id="@+id/change"
+            android:text="更改大小"
+            android:layout_gravity="start|bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
