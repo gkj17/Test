@@ -6,12 +6,7 @@
 
     <fragment
         android:id="@+id/fragmentFirst"
-        android:name="cn.guankejian.test.ui.FragmentFirst"
+        android:name="cn.guankejian.server.ui.FragmentFirst"
         android:label="FragmentFirst" >
-    </fragment>
-    <fragment
-        android:id="@+id/second"
-        android:name="cn.guankejian.test.ui.FragmentSecond"
-        android:label="" >
     </fragment>
 </navigation>

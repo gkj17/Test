@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Test</string>
+    <string name="app_name">服务端</string>
     <dimen name="dimen_medium">12dp</dimen>
     <dimen name="dimen_common">16dp</dimen>
 </resources>

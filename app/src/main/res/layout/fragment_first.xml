@@ -12,28 +12,43 @@
         android:id="@+id/coordinator"
         android:layout_height="match_parent">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:text="服务端"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline3"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
+
         <Button
             android:layout_width="wrap_content"
-            android:text="隐藏"
-            android:id="@+id/hidden"
+            android:text="发消息给client_1"
+            android:textAllCaps="false"
+            android:id="@+id/send_1"
             android:layout_marginTop="100dp"
             android:layout_height="wrap_content"/>
 
         <Button
             android:layout_width="wrap_content"
-            android:text="test"
+            android:text="发消息给client_2"
+            android:textAllCaps="false"
             android:layout_gravity="end"
-            android:id="@+id/test"
+            android:id="@+id/send_2"
             android:layout_marginTop="100dp"
             android:layout_height="wrap_content"/>
 
-        <Button
+        <TextView
             android:layout_width="wrap_content"
-            android:text="显示"
+            tools:text="client_1_content"
             android:layout_marginTop="200dp"
-            android:id="@+id/show"
+            android:id="@+id/content_1"
             android:layout_height="wrap_content"/>
 
-
+        <TextView
+            android:layout_width="wrap_content"
+            tools:text="client_2_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="200dp"
+            android:id="@+id/content_2"
+            android:layout_height="wrap_content"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

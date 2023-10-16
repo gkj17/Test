@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cn.guankejian.test">
+    package="cn.guankejian.server">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
-    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <!-- 显示系统窗口权限 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -17,7 +11,7 @@
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
 
     <application
-        android:name=".App"
+        android:name="cn.guankejian.server.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -25,7 +19,8 @@
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.Test">
-        <activity android:name=".ui.MainActivity"
+        <activity android:name="cn.guankejian.server.ui.MainActivity"
+            android:exported="true"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +28,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="cn.guankejian.server.ServerService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="cn.guankejian.server.action" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
 
     </application>
+
+
+
 
 </manifest>

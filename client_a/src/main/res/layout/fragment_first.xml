@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:id="@+id/coordinator"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:text="客户端a"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline3"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:text="绑定服务"
+            android:textAllCaps="false"
+            android:id="@+id/bind"
+            android:layout_marginTop="100dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:text="发消息给server"
+            android:textAllCaps="false"
+            android:id="@+id/send"
+            android:layout_marginTop="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            tools:text="content"
+            android:layout_marginTop="300dp"
+            android:id="@+id/content"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
