@@ -1,6 +1,7 @@
 package cn.guankejian.server
 
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -23,6 +24,9 @@ class DateUtilParameter(
     }
   }
 
+
+  @get:Rule
+  val rule = MyRule()
 
   @Test
   fun dateUtil_IsToday_ReturnTrue(){

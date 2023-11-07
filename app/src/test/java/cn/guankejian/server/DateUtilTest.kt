@@ -28,7 +28,6 @@ internal class DateUtilTest {
     }
   }
 
-
   @Before
   fun before(){
     System.err.println("before")
@@ -41,13 +40,11 @@ internal class DateUtilTest {
 
   @Test
   fun dateUtil_IsToday_ReturnTrue() {
-    System.err.println("dateUtil_IsToday_ReturnTrue")
     assertTrue("DateUtil.isToday Return True 验证正确",DateUtil.isToday(System.currentTimeMillis()))
   }
 
   @Test
   fun dateUtil_IsToday_ReturnFalse() {
-    System.err.println("dateUtil_IsToday_ReturnFalse")
     assertFalse("DateUtil.isToday Return False 验证正确",DateUtil.isToday(1000000))
   }
 
