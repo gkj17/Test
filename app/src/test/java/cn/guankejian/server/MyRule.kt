@@ -8,7 +8,7 @@ class MyRule:TestRule {
   override fun apply(base: Statement, description: Description): Statement {
     val methodName = description.methodName
     println("${methodName}开始测试")
-    base?.evaluate()
+    base.evaluate()
     println("${methodName}结束测试")
     return base
   }
