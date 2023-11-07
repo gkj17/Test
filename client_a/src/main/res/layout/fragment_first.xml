@@ -46,5 +46,14 @@
             android:layout_gravity="center_horizontal"
             android:layout_height="wrap_content"/>
 
+
+        <Button
+            android:layout_width="wrap_content"
+            android:text="解除绑定"
+            android:textAllCaps="false"
+            android:id="@+id/cancel"
+            android:layout_marginTop="400dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

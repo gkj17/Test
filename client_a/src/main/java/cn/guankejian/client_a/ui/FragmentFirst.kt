@@ -111,6 +111,9 @@ class FragmentFirst constructor(
       send.setOnClickListener {
         mBinder?.client2Server("client_a","【客户端a的消息】")
       }
+      cancel.setOnClickListener {
+        mBinder?.unregisterListener(listener)
+      }
     }
 
 

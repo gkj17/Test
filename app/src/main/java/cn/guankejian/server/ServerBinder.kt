@@ -25,6 +25,9 @@ class ServerBinder() : IServerListener.Stub() {
   }
 
   override fun client2Server(key: String, value: String) {
+    "".logD()
+    if(key == "client_a")
+      Thread.sleep(5)
     try {
       "收到客户端${key}发送的数据----：$value".logD()
         App.getInstance().handler.sendMessage(Message.obtain().apply {
