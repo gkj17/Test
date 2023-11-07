@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.paging.ExperimentalPagingApi
 import cn.guankejian.server.R
 import cn.guankejian.server.databinding.FragmentFirstBinding
-import cn.guankejian.server.second_part.bean.Person
 
 
 @ExperimentalPagingApi
