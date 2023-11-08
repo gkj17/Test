@@ -6,7 +6,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class DateUtil {
+open class DateUtil {
 
   companion object {
     var FORMAT_YMDHMS = "yyyy-MM-dd HH:mm:ss"
