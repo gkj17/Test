@@ -6,19 +6,8 @@ android {
     }
 }
 dependencies {
-    implementation deps.glide.runtime
-    implementation 'junit:junit:4.13.2'
-    kapt deps.glide.compiler
-    implementation deps.okhttp.okhttp_logging_interceptor
     testImplementation 'junit:junit:4.13.2'
-
-
-    implementation deps.retrofit.gson
-    implementation 'com.github.getActivity:XXPermissions:18.3'
-    implementation deps.coil.runtime
     implementation 'com.blankj:utilcodex:1.31.1'
-    implementation 'com.github.getActivity:EasyWindow:10.3'
-    testImplementation "org.mockito:mockito-core:5.7.0"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:5.1.0"
+    testImplementation "io.mockk:mockk:1.13.8"
 
 }
