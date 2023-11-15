@@ -1,5 +1,6 @@
 package cn.guankejian.server.ui
 
+import cn.guankejian.server.second_part.bean.Person
 import cn.guankejian.server.second_part.bean.filterTallerThan
 import cn.guankejian.server.util.daysUntil
 import cn.guankejian.server.util.isBefore
@@ -43,4 +44,22 @@ internal class Test {
     }
     Thread.sleep(10000)
   }
+
+  @Test
+  fun testSmartCast(){
+    fun getPerson() = Person(111.0)
+    class Kot{
+      var p:Person?=getPerson()
+      fun dealP(){
+        p?.let{
+          println(it.height)
+        }
+
+//        if(p != null)
+//          println(p.height)  //不行的
+      }
+    }
+  }
+
+
 }
