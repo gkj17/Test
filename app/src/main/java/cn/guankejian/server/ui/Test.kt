@@ -47,7 +47,7 @@ internal class Test {
 
   @Test
   fun testSmartCast(){
-    fun getPerson() = Person(111.0)
+     fun getPerson() = Person(111.0)
     class Kot{
       var p:Person?=getPerson()
       fun dealP(){
@@ -59,6 +59,33 @@ internal class Test {
 //          println(p.height)  //不行的
       }
     }
+  }
+
+
+  @Test
+  fun testOutIn(){
+    fun <T> copyIn(dest:Array<in T>, src:Array<T>){
+      if(dest.size < src.size){
+        throw IndexOutOfBoundsException()
+      }else{
+        src.forEachIndexed{index,value -> dest[index] = src[index]}
+      }
+    }
+
+    fun <T> copyOut(dest:Array<T>, src:Array<out T>){
+      if(dest.size < src.size){
+        throw IndexOutOfBoundsException()
+      }else{
+        src.forEachIndexed{index,value -> dest[index] = src[index]}
+      }
+    }
+
+
+    val dest = arrayOfNulls<Number>(3)
+    val src = arrayOf<Double>(1.0,2.0,3.0)
+    copyIn(dest, src)
+    copyOut(dest, src)
+
   }
 
 
