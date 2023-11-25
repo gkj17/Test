@@ -104,5 +104,16 @@ internal class Test {
     }
   }
 
+  @Test
+  fun testFlatMap(){
+    val list = listOf(
+      listOf( Person(1.2,20,"a1"), Person(1.2,20,"a2")),
+      listOf(Person(1.2,20,"b")),
+      listOf(Person(1.2,20,"c1 "),Person(1.2,20,"c2")),
+      listOf(Person(1.2,20,"d")),
+    )
+    println(list.flatMap { it.map{it.name} })
+  }
+
 
 }
