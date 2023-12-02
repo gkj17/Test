@@ -116,4 +116,9 @@ internal class Test {
   }
 
 
+  @Test
+  fun testSequence(){
+    val list = generateSequence(1000) { it*2+1 }.takeWhile { it <= 100000000 }.toList()
+    print(list)
+  }
 }
