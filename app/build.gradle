@@ -4,11 +4,26 @@ android {
     defaultConfig {
         applicationId "cn.guankejian.server"
     }
+
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/io.netty.versions.properties"
+        }
+    }
 }
 dependencies {
-    testImplementation 'junit:junit:4.13.2'
-    implementation 'com.blankj:utilcodex:1.31.1'
-    testImplementation "io.mockk:mockk:1.13.8"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+    implementation 'androidx.core:core-ktx:1.7.0'
+
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
+
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+
+    def ktorVersion = '1.6.7'
+    implementation "io.ktor:ktor-server-core:$ktorVersion"
+    implementation "io.ktor:ktor-server-netty:$ktorVersion"
 
 }

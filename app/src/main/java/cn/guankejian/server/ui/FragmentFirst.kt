@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.paging.ExperimentalPagingApi
 import cn.guankejian.server.R
 import cn.guankejian.server.databinding.FragmentFirstBinding
+import cn.guankejian.server.localIPAddress
 
 
 @ExperimentalPagingApi
@@ -28,6 +29,8 @@ class FragmentFirst constructor(
       container,
       false
     )
+
+    binding.text.text = "请打开局域网中的任意浏览器访问 Http://${localIPAddress ?: "0.0.0.0"}:12345"
 
 
 
