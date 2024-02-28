@@ -78,7 +78,7 @@ object KtorServer {
     }
 
     private fun getBytesFromDrawableResource(drawableId: Int): ByteArray {
-        val drawable = appContext.resources.getDrawable(drawableId, null)
+        val drawable = ResourcesCompat.getDrawable(appContext.resources,drawableId, null)
         val bitmap = (drawable as BitmapDrawable).bitmap
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
