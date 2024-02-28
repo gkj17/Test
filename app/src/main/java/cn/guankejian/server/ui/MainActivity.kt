@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         window.statusBarColor = Color.TRANSPARENT
 
-        KtorServer.start()
+        KtorServer.start(this)
     }
 
     override fun onDestroy() {
