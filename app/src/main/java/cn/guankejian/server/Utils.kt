@@ -16,13 +16,12 @@ val localIPAddress: String?
             val intf: NetworkInterface = en.nextElement()
             val interfaceName = intf.displayName
             Log.d("ASD","interfaceName = ${interfaceName}")
-            println("interfaceName = ${interfaceName}")
             if(interfaceName == "eth0" || interfaceName == "wlan0") {
                 val enumIpAddr: Enumeration<InetAddress> = intf.inetAddresses
                 while (enumIpAddr.hasMoreElements()) {
                     val inetAddress: InetAddress = enumIpAddr.nextElement()
                     if (!inetAddress.isLoopbackAddress && inetAddress is Inet4Address) {
-                        return inetAddress.hostAddress.toString()
+                        return inetAddress.hostAddress?.toString()
                     }
                 }
             }
