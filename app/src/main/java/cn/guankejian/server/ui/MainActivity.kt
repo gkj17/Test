@@ -6,8 +6,11 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import cn.guankejian.server.KtorServer
+import cn.guankejian.server.PushDataCallBack
 import cn.guankejian.server.databinding.ActivityMainBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -23,12 +26,28 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         window.statusBarColor = Color.TRANSPARENT
 
-        KtorServer.start(this)
+//        KtorServer.start(this,object : PushDataCallBack{
+//            override fun onSearchKeyWordChanged(value: String?) {
+//            }
+//
+//            override fun onSourceUrlChanged(value: String?) {
+//            }
+//
+//            override fun onLiveUrlChanged(value: String?) {
+//            }
+//
+//            override fun onEpgUrlChanged(value: String?) {
+//            }
+//
+//            override fun onPushUrlChanged(value: String?) {
+//            }
+//
+//        })
     }
 
     override fun onDestroy() {
         // 结束服务器
-        KtorServer.stop()
+//        KtorServer.stop()
         super.onDestroy()
     }
 
