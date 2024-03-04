@@ -9,6 +9,10 @@ interface VipService{
     suspend fun index(
     ):TestData
 
+    @GET("vip/index")
+    suspend fun index2(
+    ):BaseListResponse<VipIndexList>
+
 
 }
 
