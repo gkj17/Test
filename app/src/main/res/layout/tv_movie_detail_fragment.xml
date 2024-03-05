@@ -7,293 +7,454 @@
 
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toStartOf="@id/rate"
-            app:layout_constraintGuide_percent="0.8" />
+            android:paddingStart="@dimen/dimen_common"
+            android:paddingTop="@dimen/dimen_common"
+            tools:layout_height="1000dp">
 
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toStartOf="@id/rate"
-            app:layout_constraintGuide_percent="0.55" />
-
-
-
-        <androidx.constraintlayout.widget.Barrier
-            android:layout_width="wrap_content"
-            android:id="@+id/barrier"
-            app:constraint_referenced_ids="rate,description_title"
-            app:barrierDirection="bottom"
-            android:layout_height="wrap_content"/>
-
-        <ImageView
-            android:id="@+id/img"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:clickable="true"
-            android:focusable="false"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="@id/guideline2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:srcCompat="@tools:sample/avatars" />
-
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="4dp"
-            android:ellipsize="end"
-            android:focusable="false"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/guideline"
-            app:layout_constraintStart_toEndOf="@id/img"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="智能场景" />
-
-
-        <TextView
-            android:id="@+id/time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textColor="#CCFFFFFF"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toStartOf="@id/guideline"
-            app:layout_constraintStart_toStartOf="@id/title"
-            app:layout_constraintTop_toBottomOf="@id/title"
-            tools:text="46分钟" />
-
-
-        <TextView
-            android:id="@+id/tag"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="#CCFFFFFF"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toStartOf="@id/guideline"
-            app:layout_constraintStart_toStartOf="@id/title"
-            app:layout_constraintTop_toBottomOf="@id/time"
-            tools:text="犯罪 / 电视剧 / 中国大陆 / 剧情 / 国产剧 / 2024 / 中国 / 国产电视剧 / 张颂文" />
-
-        <TextView
-            android:id="@+id/description_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:text="简介"
-            android:textColor="#CCFFFFFF"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toStartOf="@id/guideline"
-            app:layout_constraintStart_toStartOf="@id/title"
-            app:layout_constraintTop_toBottomOf="@id/tag" />
-
-
-
-        <TextView
-            android:id="@+id/description"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:ellipsize="end"
-            android:lineSpacingMultiplier="1.1"
-            android:maxLines="4"
-            android:layout_marginTop="8dp"
-            android:textColor="#CCFFFFFF"
-            android:textSize="10.67sp"
-            app:layout_constraintBottom_toTopOf="@id/fun"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/title"
-            app:layout_constraintTop_toTopOf="@id/barrier"
-            tools:text="平静的沿海小城三平市,缉毒大队在一次行动中意外缴获一批新型冰毒其规模和纯度都极为罕见,三平公安立即展开调查。部队转业女警赵友 (姚安娜饰)凭着教说的嗅觉和洞察力,将目标锁定在了做化工买卖的黄宗伟(张颂文饰)身上。诡计多端的黄宗伟让初出茅庐的赵友男燃 了斗志,她死盯黄宗伟,不管对方藏在何处,不管假像如何高级,她都能 挖到线索,发现真相,义无反顾奔赴抓捕。以赵友男为代表的维毒警察坚持不懈追捕黄宗伟为首的听毒集团,最终成功剩灭制毒团伙的故事。" />
-
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/rate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardElevation="4dp"
-            app:layout_constraintBottom_toTopOf="@id/description"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/guideline"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/dimen_common">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tv1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="豆瓣评分"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/score"
-                    android:layout_width="wrap_content"
-                    android:layout_height="25dp"
-                    android:gravity="center"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv1"
-                    tools:text="7.2分" />
-
-                <!--                                    android:rating="@{Float.valueOf(data.rating.average)}"
--->
-                <androidx.appcompat.widget.AppCompatRatingBar
-                    android:id="@+id/rating"
-                    style="@style/Widget.AppCompat.RatingBar.Small"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:isIndicator="true"
-                    android:max="5"
-                    android:min="0"
-                    android:numStars="5"
-                    android:progressTint="@color/teal_200"
-                    android:rating="0"
-                    android:stepSize="0.1"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/score"
-                    tools:rating="2.2" />
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.8" />
 
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/count"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/rating"
-                    tools:text="10392人" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent="0.55" />
 
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.2" />
 
-        <LinearLayout
-            android:id="@+id/fun"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="@id/img"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/title">
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+            
 
-            <TextView
-                android:id="@+id/tvSort"
-                android:layout_width="80dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="倒序"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvPush"
-                android:layout_width="80dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="推送"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvDesc"
-                android:layout_width="80dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="简介"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvCollect"
-                android:layout_width="88dp"
-                android:layout_height="32dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="收藏"
-                android:layout_marginEnd="8dp"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/duanping"
-                android:layout_width="88dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="短评"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-
-            <TextView
-                android:id="@+id/changping"
-                android:layout_width="88dp"
-                android:layout_marginEnd="8dp"
-                android:layout_height="32dp"
-                android:background="@drawable/button_detail_all"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="长评"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="rate,description_title" />
 
             <ImageView
-                android:id="@+id/tvPlayUrl"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
+                android:id="@+id/img"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:clickable="true"
                 android:focusable="false"
-                app:srcCompat="@drawable/button_detail_link" />
-        </LinearLayout>
+                android:scaleType="centerCrop"
+                app:layout_constraintEnd_toStartOf="@id/guideline3"
+                app:layout_constraintBottom_toBottomOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:srcCompat="@tools:sample/avatars" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dimen_common"
+                android:ellipsize="end"
+                android:focusable="false"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@id/time"
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintStart_toEndOf="@id/img"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="智能场景" />
+
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="0dp"
+                app:layout_constraintBottom_toTopOf="@id/tag"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                tools:text="46分钟" />
+
+
+            <TextView
+                android:id="@+id/tag"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@id/description_title"
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/time"
+                tools:text="犯罪 / 电视剧 / 中国大陆 / 剧情 / 国产剧 / 2024 / 中国 / 国产电视剧 / 张颂文" />
+
+            <TextView
+                android:id="@+id/description_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="简介"
+                android:textColor="#CCFFFFFF"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@id/description"
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/tag" />
+
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:paddingTop="8dp"
+                android:textColor="#CCFFFFFF"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintBottom_toTopOf="@id/fun"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                app:layout_constraintStart_toStartOf="@id/title"
+                app:layout_constraintTop_toTopOf="@id/barrier"
+                tools:text="平静的沿海小城三平市,缉毒大队在一次行动中意外缴获一批新型冰毒其规模和纯度都极为罕见,三平公安立即展开调查。部队转业女警赵友 (姚安娜饰)凭着教说的嗅觉和洞察力,将目标锁定在了做化工买卖的黄宗伟(张颂文饰)身上。诡计多端的黄宗伟让初出茅庐的赵友男燃 了斗志,她死盯黄宗伟,不管对方藏在何处,不管假像如何高级,她都能 挖到线索,发现真相,义无反顾奔赴抓捕。以赵友男为代表的维毒警察坚持不懈追捕黄宗伟为首的听毒集团,最终成功剩灭制毒团伙的故事。" />
+
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toTopOf="@id/description"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/guideline"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/dimen_common">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="豆瓣评分"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/score"
+                        android:layout_width="wrap_content"
+                        android:layout_height="25dp"
+                        android:gravity="center"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv1"
+                        tools:text="7.2分" />
+
+                    <!--                                    android:rating="@{Float.valueOf(data.rating.average)}"
+    -->
+                    <androidx.appcompat.widget.AppCompatRatingBar
+                        android:id="@+id/rating"
+                        style="@style/Widget.AppCompat.RatingBar.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:isIndicator="true"
+                        android:max="5"
+                        android:min="0"
+                        android:numStars="5"
+                        android:progressTint="@color/teal_200"
+                        android:rating="0"
+                        android:stepSize="0.1"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/score"
+                        tools:rating="2.2" />
+
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/count"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/rating"
+                        tools:text="10392人" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+            <LinearLayout
+                android:id="@+id/fun"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@id/img"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/title">
+
+                <TextView
+                    android:id="@+id/tvSort"
+                    android:layout_width="80dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="倒序"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvPush"
+                    android:layout_width="80dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="推送"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvDesc"
+                    android:layout_width="80dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="简介"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tvCollect"
+                    android:layout_width="88dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="收藏"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/duanping"
+                    android:layout_width="88dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="短评"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+
+                <TextView
+                    android:id="@+id/changping"
+                    android:layout_width="88dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/button_detail_all"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="长评"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
+
+
+                <ImageView
+                    android:id="@+id/tvPlayUrl"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:focusable="false"
+                    app:srcCompat="@drawable/button_detail_link" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/duanping_cv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dimen_common"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="4dp"
+                app:layout_constraintEnd_toEndOf="@id/guideline4"
+                app:layout_constraintTop_toBottomOf="@id/guideline2"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/dimen_common">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="短评"
+                        app:layout_constraintBottom_toBottomOf="@id/all_duanping"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/all_duanping"/>
+
+<!--                    android:text='@{"全部"+duan_ping_total+" >"}'-->
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:id="@+id/all_duanping"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="全部6820 >" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/duanping_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dimen_common"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        tools:itemCount="3"
+                        android:overScrollMode="never"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:layout_constraintTop_toBottomOf="@id/tv4" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/changping_cv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dimen_common"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/guideline2"
+                app:layout_constraintStart_toEndOf="@id/guideline4">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/dimen_common">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="长评"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintBottom_toBottomOf="@id/all_changping"
+                        app:layout_constraintTop_toTopOf="@id/all_changping"/>
+
+<!--                    android:text='@{"全部"+chang_ping_total+" >"}'-->
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:id="@+id/all_changping"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                        app:layout_constraintBottom_toBottomOf="@id/tv6"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="全部6820 >" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/changping_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        tools:itemCount="3"
+                        android:layout_marginTop="@dimen/dimen_common"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:layout_constraintTop_toBottomOf="@id/tv6" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+
+<!--            android:visibility="@{data.names.size() >0?View.VISIBLE : View.INVISIBLE}"-->
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv3"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/dimen_common"
+                android:layout_marginTop="@dimen/dimen_common"
+                android:text="影人"
+                android:textColor="#CCFFFFFF"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/changping_cv"
+                tools:text="影人" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dimen_common"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
+                android:paddingStart="@dimen/dimen_common"
+                android:paddingEnd="@dimen/dimen_common"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv3" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 </layout>
